@@ -17,6 +17,8 @@ ros2 bag play path_left_prius --remap /path:=path_left
 
 # LiDAR dataset
 
+https://uncloud.univ-nantes.fr/index.php/s/tkEwQcM7qGMj9wp
+
 rviz2 -d jemaro.rviz
 
 ros2 launch pointcloud_downsampling pointcloud_downsampling.launch.py
