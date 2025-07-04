@@ -5,7 +5,7 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='twist_to_prius_cmd',
-            executable='twist_to_prius_cmd.py.py',
+            executable='twist_to_prius_cmd.py',
             name='twist_to_prius_cmd',
             output='screen'
         ),
