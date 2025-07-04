@@ -21,6 +21,10 @@ rviz2 -d jemaro.rviz
 
 ros2 launch pointcloud_downsampling pointcloud_downsampling.launch.py
 
+ros2 bag play path_zoe --remap /ZOE3/path_follower/setPath:=path
+ros2 bag play path_left_zoe --remap /ZOE3/path_follower/setPath:=path_left
+ros2 bag play path_right_zoe --remap /ZOE3/path_follower/setPath:=path_right
+
 ros2 bag play rosbag2_2025_06_26-10_27_18
 
 
