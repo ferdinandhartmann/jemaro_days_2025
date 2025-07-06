@@ -6,9 +6,7 @@ The Gazebo prius environment is based on https://github.com/mattborghi/osrf_car_
 
 Launch the Gazebo simulator with the straight road world and the prius:
 
-'''
-ros2 launch car_demo demo2.launch.py
-'''
+~ ros2 launch car_demo demo2.launch.py ~
 
 Convert twist messages to the prius control messages:
 
