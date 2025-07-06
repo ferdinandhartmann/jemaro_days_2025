@@ -2,13 +2,21 @@
 
 
 # Gazebo
-The Gazebo environment is based on https://github.com/mattborghi/osrf_car_demo
+The Gazebo prius environment is based on https://github.com/mattborghi/osrf_car_demo
 
-ros2 launch car_demo demo2.launch.py
+Launch the Gazebo simulator with the straight road world and the prius:
+
+'ros2 launch car_demo demo2.launch.py'
+
+Convert twist messages to the prius control messages:
 
 ros2 launch twist_to_prius_cmd.launch.py
 
+Launch a basic pure pursuit path following algorithm:
+
 ros2 launch car_control car_control.launch.py
+
+Publish the path of the center of the lane and of the right and left sides of the road:
 
 ros2 bag play path_prius
 
