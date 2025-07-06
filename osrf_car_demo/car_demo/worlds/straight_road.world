@@ -89,28 +89,28 @@
       <pose>7.6056 -1.64129 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>8824 302000000</sim_time>
-      <real_time>57 571463378</real_time>
-      <wall_time>1751810238 834563119</wall_time>
-      <iterations>57216</iterations>
+      <sim_time>9295 523000000</sim_time>
+      <real_time>474 149021167</real_time>
+      <wall_time>1751838084 588957209</wall_time>
+      <iterations>471221</iterations>
       <model name='Construction Cone_0'>
-        <pose>1.89617 5.80196 0.04999 0 0 -2.18941</pose>
+        <pose>1.88666 6.95718 0.05 1e-06 -1e-06 -2.18941</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>1.89617 5.80196 0.04999 0 0 -2.18941</pose>
+          <pose>1.88666 6.95718 0.05 1e-06 -1e-06 -2.18941</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 -9.8 -0 -0 -0</acceleration>
-          <wrench>0 0 -9.8 0 -0 0</wrench>
+          <acceleration>-0 -1e-06 17.8733 2.24323 0.013095 3e-06</acceleration>
+          <wrench>-0 -1e-06 17.8733 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_0_clone'>
-        <pose>1.98719 13.2247 0.050001 1e-06 -2e-06 -2.03492</pose>
+        <pose>1.7731 -0.446746 0.05 0 -0 -2.03492</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>1.98719 13.2247 0.050001 1e-06 -2e-06 -2.03492</pose>
+          <pose>1.7731 -0.446746 0.05 0 -0 -2.03492</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>-0 0 -8.95342 0.254853 0.033536 0</acceleration>
-          <wrench>-0 0 -8.95342 0 -0 0</wrench>
+          <acceleration>-1e-06 -0 18.9759 1.13656 0.463657 -1e-06</acceleration>
+          <wrench>-1e-06 -0 18.9759 0 -0 0</wrench>
         </link>
       </model>
       <model name='House 1'>
@@ -164,10 +164,10 @@
         </link>
       </model>
       <model name='apartment'>
-        <pose>14.7141 36.3974 0.116361 0 -0 0</pose>
+        <pose>14.6549 33.8371 0.116361 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>14.7141 36.3974 0.116361 0 -0 0</pose>
+          <pose>14.6549 33.8371 0.116361 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -183,11 +183,21 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='collapsed_industrial'>
-        <pose>14.2409 12.4943 0 0 0 -2.33683</pose>
+      <model name='bus'>
+        <pose>-1.91099 39.7214 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>14.2409 12.4943 0 0 0 -2.33683</pose>
+          <pose>-1.91099 39.7214 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='collapsed_industrial'>
+        <pose>13.7095 5.27433 0 0 0 -2.33683</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>13.7095 5.27433 0 0 0 -2.33683</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -208,6 +218,16 @@
         <scale>1 1 1</scale>
         <link name='link'>
           <pose>-14 0 0.15 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='hatchback_blue'>
+        <pose>-1.80618 -31.0006 0 0 0 -1.54267</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-1.80618 -31.0006 0 0 0 -1.54267</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -264,50 +284,50 @@
         </link>
       </model>
       <model name='oak_tree'>
-        <pose>8.66273 -3.68548 0 0 -0 0</pose>
+        <pose>7.15996 16.4783 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>8.66273 -3.68548 0 0 -0 0</pose>
+          <pose>7.15996 16.4783 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='osrf_first_office'>
-        <pose>16.2319 -18.9026 0.238774 0 0 -1.5708</pose>
+        <pose>16.4635 -22.5249 0.238774 0 0 -1.5708</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>16.2319 -18.9026 0.238774 0 0 -1.5708</pose>
+          <pose>16.4635 -22.5249 0.238774 0 0 -1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='person_standing'>
-        <pose>8.34504 -34.8714 0.25 0 -1e-06 -0.237437</pose>
+        <pose>5.10068 -14.1531 0.25 1e-06 1e-06 -0.237614</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>8.34504 -34.8714 0.25 0 -1e-06 -0.237437</pose>
+          <pose>5.10068 -14.1531 0.25 1e-06 1e-06 -0.237614</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>-1.7389 0.188076 -1.02322 2.76014 -1.48866 -2.39626</acceleration>
-          <wrench>-139.112 15.0461 -81.8577 0 -0 0</wrench>
+          <acceleration>1.39609 -1.58827 -0.93375 1.64634 1.41907 0.02842</acceleration>
+          <wrench>111.687 -127.062 -74.7 0 -0 0</wrench>
         </link>
       </model>
       <model name='person_walking'>
-        <pose>-5.34204 -5.49725 0.250002 0 1.4e-05 0.1508</pose>
+        <pose>-5.34176 -5.49689 0.250001 0 -5e-06 0.150136</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-5.34204 -5.49725 0.250002 0 1.4e-05 0.1508</pose>
+          <pose>-5.34176 -5.49689 0.250001 0 -5e-06 0.150136</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>-2.0242 -0.309651 5.14771 -2.78143 -1.01018 3.1415</acceleration>
-          <wrench>-161.936 -24.772 411.817 0 -0 0</wrench>
+          <acceleration>1.60301 0.245392 2.03722 2.85637 1.45366 -3.14153</acceleration>
+          <wrench>128.241 19.6314 162.978 0 -0 0</wrench>
         </link>
       </model>
       <model name='pine_tree'>
-        <pose>7.13422 -33.0496 0 0 -0 0</pose>
+        <pose>6.07423 -35.1132 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>7.13422 -33.0496 0 0 -0 0</pose>
+          <pose>6.07423 -35.1132 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -321,6 +341,64 @@
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='prius'>
+        <pose>1.52094 -47.0363 0.056907 -1e-06 0.000236 1.62761</pose>
+        <scale>1 1 1</scale>
+        <link name='chassis'>
+          <pose>1.43865 -45.5887 0.057487 4.5e-05 1e-06 -3.08559</pose>
+          <velocity>0.012707 -0.029384 -0.015117 0.005079 0.000196 -0.011842</velocity>
+          <acceleration>0.0117 -0.100698 -0.049715 -0.59158 -0.082073 0.620625</acceleration>
+          <wrench>15.8998 -136.849 -67.5633 0 -0 0</wrench>
+        </link>
+        <link name='dummy'>
+          <pose>1.52094 -47.0363 0.056907 -1e-06 0.000236 1.62761</pose>
+          <velocity>-0.005357 -0.031566 -0.001933 0.011154 0.000547 0.042837</velocity>
+          <acceleration>1.3147 -2.82179 0.00739 -0.817256 -0.060166 -0.628613</acceleration>
+          <wrench>1.3147 -2.82179 0.00739 0 -0 0</wrench>
+        </link>
+        <link name='fl_axle'>
+          <pose>0.593924 -44.2238 0.357607 0.000392 -0.000739 -3.08533</pose>
+          <velocity>0.027368 -0.020614 -0.02904 -0.059192 0.116511 0.754733</velocity>
+          <acceleration>-4.07647 -0.261116 0.287978 -2.64139 -0.425466 0.865685</acceleration>
+          <wrench>-4.07647 -0.261116 0.287978 0 -0 0</wrench>
+        </link>
+        <link name='fr_axle'>
+          <pose>2.12552 -44.138 0.357607 0.007662 -0.001213 -3.08111</pose>
+          <velocity>0.028203 -0.013475 -0.028963 0.988831 0.084759 -0.973756</velocity>
+          <acceleration>-4.17234 28.1466 0.292635 1.08691 1.16747 0.043834</acceleration>
+          <wrench>-4.17234 28.1466 0.292635 0 -0 0</wrench>
+        </link>
+        <link name='front_left_wheel'>
+          <pose>0.593924 -44.2238 0.357566 2.68066 -0.000546 -3.08533</pose>
+          <velocity>0.027264 -0.020654 -0.024357 -0.022042 0.088444 0.754727</velocity>
+          <acceleration>-4.25064 -0.293159 0.026099 -1.03409 1.25042 -2.25359</acceleration>
+          <wrench>-46.757 -3.22475 0.28709 0 -0 0</wrench>
+        </link>
+        <link name='front_right_wheel'>
+          <pose>2.12552 -44.138 0.357566 0.872449 -0.00089 -3.08111</pose>
+          <velocity>0.028082 -0.01324 -0.024246 1.21147 0.091099 -0.973685</velocity>
+          <acceleration>-4.33864 29.103 0.032747 0.024781 -0.825888 1.81252</acceleration>
+          <wrench>-47.725 320.133 0.360214 0 -0 0</wrench>
+        </link>
+        <link name='rear_left_wheel'>
+          <pose>0.728056 -47.0808 0.357558 -2.48074 8.7e-05 -3.08559</pose>
+          <velocity>-0.00352 -0.027763 -0.023242 0.004847 -0.010943 -0.011843</velocity>
+          <acceleration>3.82516 -10.4516 0.761133 0.489738 0.751007 0.621987</acceleration>
+          <wrench>42.0767 -114.968 8.37246 0 -0 0</wrench>
+        </link>
+        <link name='rear_right_wheel'>
+          <pose>2.31157 -46.992 0.357558 0.689713 5.3e-05 -3.08559</pose>
+          <velocity>-0.002926 -0.041582 -0.023076 0.004976 -0.009169 -0.011856</velocity>
+          <acceleration>2.8499 -0.88696 0.764635 1.95375 -0.820979 -2.54444</acceleration>
+          <wrench>31.3489 -9.75657 8.41098 0 -0 0</wrench>
+        </link>
+        <link name='steering_wheel'>
+          <pose>1.04633 -44.9818 1.0457 -1.30205 -0 -3.08559</pose>
+          <velocity>0.020097 -0.029791 -0.011875 0.005139 0.000291 -0.011882</velocity>
+          <acceleration>-0.382969 -0.036301 -0.425012 -0.59221 0.126871 0.467798</acceleration>
+          <wrench>-0.382969 -0.036301 -0.425012 0 -0 0</wrench>
         </link>
       </model>
       <model name='road_border'>
@@ -428,7 +506,7 @@
     </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-0.290037 -98.6651 29.053 -0 0.433796 1.41378</pose>
+        <pose>5.65344 -81.0748 29.7172 0 0.441795 1.68496</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -2152,6 +2230,886 @@
         <kinematic>0</kinematic>
       </link>
       <pose>1.8216 -49.4803 0 0 -0 0</pose>
+    </model>
+    <model name='prius'>
+      <link name='dummy'>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='base_link_connection' type='revolute'>
+        <pose relative_to='dummy'>1.45 0 0 0 -0 1.57</pose>
+        <parent>dummy</parent>
+        <child>chassis</child>
+        <axis>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+          </limit>
+          <dynamics>
+            <damping>0</damping>
+            <friction>0</friction>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <xyz>0 0 1</xyz>
+        </axis>
+        <physics>
+          <ode>
+            <limit>
+              <cfm>0</cfm>
+              <erp>0.2</erp>
+            </limit>
+          </ode>
+        </physics>
+      </joint>
+      <link name='chassis'>
+        <pose relative_to='base_link_connection'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 -0.00103 0.481884 0 -0 1.5708</pose>
+          <mass>1359</mass>
+          <inertia>
+            <ixx>2583.64</ixx>
+            <ixy>6.53301e-06</ixy>
+            <ixz>0.585363</ixz>
+            <iyy>595.596</iyy>
+            <iyz>-2.15016e-06</iyz>
+            <izz>2683.73</izz>
+          </inertia>
+        </inertial>
+        <collision name='chassis_collision'>
+          <pose>0 0.05 0.625 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.7526 2.1 0.95</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__front_bumper_collision_1'>
+          <pose>0 -2 0.458488 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.33728 0.48 0.566691</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__hood_collision_2'>
+          <pose>0 -1.90084 0.676305 0.341247 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.59797 0.493107 0.265468</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__windshield_collision_3'>
+          <pose>0 -0.875105 1.03227 0.335476 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.16838 1.65425 0.272347</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__top_front_collision_4'>
+          <pose>0 0.161236 1.38604 0.13503 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.27915 0.625988 0.171868</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__top_rear_collision_5'>
+          <pose>0 0.817696 1.36007 -0.068997 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.28513 0.771189 0.226557</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__rear_window_collision_6'>
+          <pose>0 1.64053 1.17513 -0.262017 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.26785 1.11634 0.244286</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__trunk_collision_7'>
+          <pose>0 1.63706 0.88818 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.78806 1.13899 0.482746</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='chassis_fixed_joint_lump__back_bumper_collision_8'>
+          <pose>0 2.05445 0.57787 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>1.78165 0.512093 0.581427</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='chassis_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://prius_description/meshes/hybrid_body.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='center_laser_sensor' type='gpu_ray'>
+          <visualize>0</visualize>
+          <update_rate>20</update_rate>
+          <always_on>1</always_on>
+          <ray>
+            <scan>
+              <vertical>
+                <samples>128</samples>
+                <resolution>1</resolution>
+                <min_angle>-0.19635</min_angle>
+                <max_angle>0.19635</max_angle>
+              </vertical>
+              <horizontal>
+                <samples>1024</samples>
+                <resolution>1</resolution>
+                <min_angle>-3.14</min_angle>
+                <max_angle>3.14</max_angle>
+              </horizontal>
+            </scan>
+            <range>
+              <min>0.8</min>
+              <max>200</max>
+              <resolution>0.03</resolution>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </ray>
+          <plugin name='center_laser_sensor' filename='libgazebo_ros_ray_sensor.so'>
+            <ros>
+              <namespace>prius</namespace>
+              <argument>~/out:=center_laser/scan</argument>
+            </ros>
+            <frame_name>center_laser_link</frame_name>
+            <output_type>sensor_msgs/PointCloud2</output_type>
+          </plugin>
+          <pose>0 0.4 1.8 0 0 -1.5707</pose>
+        </sensor>
+        <sensor name='front_camera_sensor' type='camera'>
+          <update_rate>30</update_rate>
+          <always_on>0</always_on>
+          <visualize>0</visualize>
+          <camera name='front_camera'>
+            <horizontal_fov>2.0944</horizontal_fov>
+            <image>
+              <width>1280</width>
+              <height>1024</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.02</near>
+              <far>300</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+          <plugin name='front_camera_controller' filename='libgazebo_ros_camera.so'>
+            <ros>
+              <namespace>prius</namespace>
+            </ros>
+            <camera_name>/prius/front_camera</camera_name>
+            <frame_name>front_camera_link_optical</frame_name>
+            <hack_baseline>0.07</hack_baseline>
+          </plugin>
+          <pose>0 -0.9 1.1 0 0 -1.5707</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='front_left_steer_joint' type='revolute'>
+        <pose relative_to='chassis'>0.767 -1.41 0.3 0 -0 0</pose>
+        <parent>chassis</parent>
+        <child>fl_axle</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <effort>1e+07</effort>
+            <velocity>1e+06</velocity>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='fl_axle'>
+        <pose relative_to='front_left_steer_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.004</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.004</iyy>
+            <iyz>0</iyz>
+            <izz>0.004</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='front_left_wheel_joint' type='revolute'>
+        <pose relative_to='fl_axle'>0 0 0 0 -0 0</pose>
+        <parent>fl_axle</parent>
+        <child>front_left_wheel</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='front_left_wheel'>
+        <pose relative_to='front_left_wheel_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>11</mass>
+          <inertia>
+            <ixx>0.586312</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.335529</iyy>
+            <iyz>0</iyz>
+            <izz>0.335529</izz>
+          </inertia>
+        </inertial>
+        <collision name='front_left_wheel_collision_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.31265</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+08</kp>
+                <min_depth>0.005</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='front_left_wheel_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://prius_description/meshes/wheel.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='front_right_steer_joint' type='revolute'>
+        <pose relative_to='chassis'>-0.767 -1.41 0.3 0 -0 0</pose>
+        <parent>chassis</parent>
+        <child>fr_axle</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <effort>1e+07</effort>
+            <velocity>1e+06</velocity>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='fr_axle'>
+        <pose relative_to='front_right_steer_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.004</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.004</iyy>
+            <iyz>0</iyz>
+            <izz>0.004</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='front_right_wheel_joint' type='revolute'>
+        <pose relative_to='fr_axle'>0 0 0 0 -0 0</pose>
+        <parent>fr_axle</parent>
+        <child>front_right_wheel</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='front_right_wheel'>
+        <pose relative_to='front_right_wheel_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>11</mass>
+          <inertia>
+            <ixx>0.586312</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.335529</iyy>
+            <iyz>0</iyz>
+            <izz>0.335529</izz>
+          </inertia>
+        </inertial>
+        <collision name='front_right_wheel_collision_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.31265</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+08</kp>
+                <min_depth>0.005</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='front_right_wheel_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://prius_description/meshes/wheel.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='rear_left_wheel_joint' type='revolute'>
+        <pose relative_to='chassis'>0.793 1.45 0.3 0 -0 0</pose>
+        <parent>chassis</parent>
+        <child>rear_left_wheel</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='rear_left_wheel'>
+        <pose relative_to='rear_left_wheel_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>11</mass>
+          <inertia>
+            <ixx>0.586312</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.335529</iyy>
+            <iyz>0</iyz>
+            <izz>0.335529</izz>
+          </inertia>
+        </inertial>
+        <collision name='rear_left_wheel_collision_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.31265</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+08</kp>
+                <min_depth>0.005</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='rear_left_wheel_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://prius_description/meshes/wheel.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='rear_right_wheel_joint' type='revolute'>
+        <pose relative_to='chassis'>-0.793 1.45 0.3 0 -0 0</pose>
+        <parent>chassis</parent>
+        <child>rear_right_wheel</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='rear_right_wheel'>
+        <pose relative_to='rear_right_wheel_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>11</mass>
+          <inertia>
+            <ixx>0.586312</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.335529</iyy>
+            <iyz>0</iyz>
+            <izz>0.335529</izz>
+          </inertia>
+        </inertial>
+        <collision name='rear_right_wheel_collision_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.31265</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+08</kp>
+                <min_depth>0.005</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='rear_right_wheel_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://prius_description/meshes/wheel.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='steering_joint' type='revolute'>
+        <pose relative_to='chassis'>0.357734 -0.627868 0.988243 -1.3021 0 0</pose>
+        <parent>chassis</parent>
+        <child>steering_wheel</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <effort>1e+07</effort>
+            <velocity>1e+06</velocity>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='steering_wheel'>
+        <pose relative_to='steering_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.145833</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.145833</iyy>
+            <iyz>0</iyz>
+            <izz>0.125</izz>
+          </inertia>
+        </inertial>
+        <visual name='steering_wheel_visual'>
+          <pose>0 0 0 1.3021 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://prius_description/meshes/steering_wheel.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='joint_states' filename='libgazebo_ros_joint_state_publisher.so'>
+        <ros>
+          <namespace>prius</namespace>
+          <remapping>~/out:=joint_states</remapping>
+        </ros>
+        <update_rate>30</update_rate>
+        <joint_name>steering_joint</joint_name>
+        <joint_name>front_left_steer_joint</joint_name>
+        <joint_name>front_right_steer_joint</joint_name>
+        <joint_name>front_left_wheel_joint</joint_name>
+        <joint_name>front_right_wheel_joint</joint_name>
+        <joint_name>rear_left_wheel_joint</joint_name>
+        <joint_name>rear_right_wheel_joint</joint_name>
+      </plugin>
+      <plugin name='pruis_hybrid_drive' filename='libPriusHybridPlugin.so'>
+        <ros>
+          <namespace>prius</namespace>
+          <remapping>prius:=control</remapping>
+        </ros>
+        <chassis>chassis</chassis>
+        <front_left_wheel>front_left_wheel_joint</front_left_wheel>
+        <front_right_wheel>front_right_wheel_joint</front_right_wheel>
+        <front_left_wheel_steering>front_left_steer_joint</front_left_wheel_steering>
+        <front_right_wheel_steering>front_right_steer_joint</front_right_wheel_steering>
+        <back_left_wheel>rear_left_wheel_joint</back_left_wheel>
+        <back_right_wheel>rear_right_wheel_joint</back_right_wheel>
+        <steering_wheel>steering_joint</steering_wheel>
+        <chassis_aero_force_gain>0.63045</chassis_aero_force_gain>
+        <front_torque>859.4004393000001</front_torque>
+        <back_torque>0</back_torque>
+        <front_brake_torque>1031.28052716</front_brake_torque>
+        <back_brake_torque>687.5203514400001</back_brake_torque>
+        <battery_charge_watt_hours>291</battery_charge_watt_hours>
+        <battery_discharge_watt_hours>214</battery_discharge_watt_hours>
+        <gas_efficiency>0.371</gas_efficiency>
+        <min_gas_flow>8.981854013171626e-05</min_gas_flow>
+        <max_speed>37.998337013956565</max_speed>
+        <max_steer>0.6458</max_steer>
+        <flwheel_steering_p_gain>1e4</flwheel_steering_p_gain>
+        <frwheel_steering_p_gain>1e4</frwheel_steering_p_gain>
+        <flwheel_steering_i_gain>0</flwheel_steering_i_gain>
+        <frwheel_steering_i_gain>0</frwheel_steering_i_gain>
+        <flwheel_steering_d_gain>3e2</flwheel_steering_d_gain>
+        <frwheel_steering_d_gain>3e2</frwheel_steering_d_gain>
+      </plugin>
+      <plugin name='p3d' filename='libgazebo_ros_p3d.so'>
+        <ros>
+          <namespace>prius</namespace>
+          <argument>odom:=ground_truth</argument>
+        </ros>
+        <body_name>chassis</body_name>
+        <topic_name>base_pose_ground_truth</topic_name>
+        <frame_name>world</frame_name>
+        <gaussian_noise>0.01</gaussian_noise>
+      </plugin>
+      <frame name='dummy_joint' attached_to='dummy'>
+        <pose>0 0 0 0 -0 0</pose>
+      </frame>
+      <frame name='base_link' attached_to='dummy_joint'/>
+      <frame name='center_laser_joint' attached_to='chassis'>
+        <pose>0 0.4 1.8 0 0 -1.5707</pose>
+      </frame>
+      <frame name='center_laser_link' attached_to='center_laser_joint'/>
+      <frame name='front_camera_optical_joint' attached_to='front_camera_link'>
+        <pose>0 0 0 -1.5707 0 -1.5707</pose>
+      </frame>
+      <frame name='front_camera_link_optical' attached_to='front_camera_optical_joint'/>
+      <frame name='front_camera_joint' attached_to='chassis'>
+        <pose>0 -0.9 1.1 0 0 -1.5707</pose>
+      </frame>
+      <frame name='front_camera_link' attached_to='front_camera_joint'/>
+      <pose>1.5 -45 0.058 0 -0 1.5708</pose>
+      <update_rate>30.0</update_rate>
+    </model>
+    <model name='hatchback_blue'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <pose>0 0 0 0 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>0.0254 0.0254 0.0254</scale>
+              <uri>model://hatchback_blue/meshes/hatchback.obj</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0 0 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>0.0254 0.0254 0.0254</scale>
+              <uri>model://hatchback_blue/meshes/hatchback.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-1.8746 -29.0648 0 0 -0 0</pose>
+    </model>
+    <model name='bus'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://bus/meshes/bus.obj</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>0.01 0.01 0.01</scale>
+              <uri>model://bus/meshes/bus.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-2.28864 30.038 0 0 -0 0</pose>
     </model>
   </world>
 </sdf>
