@@ -254,9 +254,12 @@ private:
         ec.extract(all_cluster_indices);
 
         std::vector<pcl::PointIndices> cluster_indices;
+
+        float global_min_z = std::numeric_limits<float>::max();
+        float global_max_z = std::numeric_limits<float>::lowest();
+
         for (const auto &indices : all_cluster_indices)
         {
-            // Calculate the bounding box dimensions of the cluster
             float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
             float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
 
@@ -275,12 +278,21 @@ private:
             float size_y = max_pt[1] - min_pt[1];
             float size_z = max_pt[2] - min_pt[2];
 
-            // Check if the cluster size exceeds the maximum allowed size
-            if (size_x <= max_cluster_size_meters_ && size_y <= max_cluster_size_meters_ && size_z <= max_cluster_size_meters_)
+            // Update global min/max z
+            if (min_pt[2] < global_min_z)
+                global_min_z = min_pt[2];
+            if (max_pt[2] > global_max_z)
+                global_max_z = max_pt[2];
+
+            // // Check if the cluster size exceeds the maximum allowed size and Remove clusters where max z > max_cluster_z_height_
+            if (size_x <= max_cluster_size_meters_ && size_y <= max_cluster_size_meters_ && size_z <= max_cluster_size_meters_ && max_pt[2] <= max_cluster_z_height_)
             {
                 cluster_indices.push_back(indices);
             }
         }
+
+        RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f", global_min_z, global_max_z);
+
         return cluster_indices;
     }
 
@@ -313,6 +325,8 @@ private:
         size_t clusters_to_publish = std::min(cluster_intensities.size(), static_cast<size_t>(max_clusters));
 
         RCLCPP_INFO(this->get_logger(), "Publishing %zu clusters as markers", clusters_to_publish);
+
+
 
         for (size_t i = 0; i < clusters_to_publish; ++i)
         {
@@ -386,7 +400,8 @@ private:
         declare_parameter<int>("max_cluster_size_select", 25);
         declare_parameter<double>("ransac_distance_threshold", 0.2);
         declare_parameter<double>("intensity_threshold", 100.0);
-        declare_parameter<double>("max_cluster_size_meters", 5.0); 
+        declare_parameter<double>("max_cluster_size_meters", 5.0);
+        declare_parameter<double>("max_cluster_z_height_", 0.5);
 
         get_parameter("input_topic", input_topic_);
         get_parameter("obstacles_topic", obstacles_topic_);
@@ -399,7 +414,8 @@ private:
         get_parameter("max_cluster_size_select", max_cluster_size_select_);
         get_parameter("ransac_distance_threshold", ransac_distance_threshold_);
         get_parameter("intensity_threshold", intensity_threshold_);
-        get_parameter("max_cluster_size_meters", max_cluster_size_meters_); 
+        get_parameter("max_cluster_size_meters", max_cluster_size_meters_);
+        get_parameter("max_cluster_z_height", max_cluster_z_height_);
     }
 
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
@@ -427,6 +443,7 @@ private:
     int max_cluster_size_select_;
     double intensity_threshold_;
     double max_cluster_size_meters_;
+    double max_cluster_z_height_;
 };
 
 int main(int argc, char **argv)

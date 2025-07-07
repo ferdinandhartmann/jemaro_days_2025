@@ -13,3 +13,4 @@ obstacle_detector:
     max_cluster_publish: 100000
     intensity_threshold: 700.0 # Intensity threshold for filtering points
     max_cluster_size_meters: 1.0
+    max_cluster_z_height: -1.0 # Maximum z coordinate height of the cluster in meters
