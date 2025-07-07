@@ -2,8 +2,15 @@
 
 The rosbag LiDAR dataset and the lane paths are available here: https://uncloud.univ-nantes.fr/index.php/s/tkEwQcM7qGMj9wp 
 
+# In the Workspace folder
+
+```
+colcon build --symlink-install
+```
+
 # Gazebo
 The Gazebo prius environment is based on https://github.com/mattborghi/osrf_car_demo
+
 
 Launch the Gazebo simulator with the straight road world and the prius:
 ```
@@ -12,7 +19,7 @@ ros2 launch car_demo straight_road.launch.py
 
 Convert twist messages to the prius control messages:
 ```
-ros2 launch twist_to_prius_cmd.launch.py
+ros2 launch twist_to_prius_cmd twist_to_prius_cmd.launch.py
 ```
 
 Launch a basic pure pursuit path following algorithm:
