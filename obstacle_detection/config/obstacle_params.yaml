@@ -1,0 +1,8 @@
+obstacle_detector:
+  ros__parameters:
+    input_topic: "/ZOE3/os_node/points_downsampled_cutoff"
+    obstacles_topic: "/obstacles"
+    clusters_topic: "/obstacle_clusters"
+    fov_deg: 60.0
+    max_cluster_publish: 5
+    frame_id: "ZOE3/os_sensor"

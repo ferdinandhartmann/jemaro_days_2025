@@ -2,6 +2,7 @@
   ros__parameters:
     sub_topic: "/ZOE3/os_node/points"
     pub_topic: "/ZOE3/os_node/points_downsampled"
+    pub_topic_cutoff: "/ZOE3/os_node/points_downsampled_cutoff"
     pub_cloud_frame: "ZOE3/os_sensor"
     leaf_size_x: 0.2
     leaf_size_y: 0.2

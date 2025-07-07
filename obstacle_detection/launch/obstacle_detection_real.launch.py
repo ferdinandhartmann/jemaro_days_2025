@@ -8,14 +8,10 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
-    # RViz config path
-    rviz_config_path = os.path.join(
-        get_package_share_directory('obstacle_detection'),
-        'config',
-        'real.rviz'
-    )
+    pkg_path = get_package_share_directory('obstacle_detection')
+    rviz_config_path = os.path.join(pkg_path, 'config', 'obstacle_detection.rviz')
+    params_file = os.path.join(pkg_path, 'config', 'obstacle_params.yaml')
 
-    # Launch RViz
     rviz2 = Node(
         package='rviz2',
         executable='rviz2',
@@ -24,7 +20,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Include pointcloud_downsampling launch
+
     downsampling_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('pointcloud_downsampling'),
@@ -32,8 +28,17 @@ def generate_launch_description():
             'pointcloud_downsampling.launch.py'
         ))
     )
-    
+
+    obstacle_node = Node(
+        package='obstacle_detection',
+        executable='obstacle_detection_node',
+        name='obstacle_detector',
+        output='screen',
+        parameters=[params_file]
+    )
+
     return LaunchDescription([
-        rviz2,
-        downsampling_launch
+        # rviz2,
+        downsampling_launch,
+        obstacle_node
     ])
