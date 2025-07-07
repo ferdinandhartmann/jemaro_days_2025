@@ -2,8 +2,8 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include "nav_msgs/msg/occupancy_grid.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "tf2_ros/static_transform_broadcaster.h"
+// #include "geometry_msgs/msg/transform_stamped.hpp"
+// #include "tf2_ros/static_transform_broadcaster.h"
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/extract_indices.h>
@@ -70,9 +70,8 @@ private:
         draw_rect(50, 40, 10, 5, 100);
         draw_rect(10, 10, 10, 5, 100);
 
-        // Publish the map
         map_.header.stamp = this->now();
-        map_.header.frame_id = "custom_map"; // Set the frame ID
+        map_.header.frame_id = "custom_map";
         publisher_->publish(map_);
         // RCLCPP_INFO(this->get_logger(), "Map with obstacles published");
     }
@@ -98,14 +97,22 @@ private:
         pcl::PointCloud<pcl::PointXYZI> cloud;
         pcl::fromROSMsg(*msg, cloud);
 
+        RCLCPP_INFO(this->get_logger(), "Received cloud with %zu points", cloud.size());
+
         auto obstacles = performRansacSegmentation(cloud);
+        RCLCPP_INFO(this->get_logger(), "RANSAC removed %zu points, %zu points remain", cloud.size() - obstacles->size(), obstacles->size());
+
         publishObstacles(obstacles, msg->header);
 
         auto high_intensity_obstacles = filterHighIntensityObstacles(obstacles);
+        RCLCPP_INFO(this->get_logger(), "Filtered high-intensity obstacles: %zu points", high_intensity_obstacles->size());
+
         publishHighIntensityObstacles(high_intensity_obstacles, msg->header);
 
-        auto cluster_indices = performClustering(obstacles);
-        publishClustersAndMarkers(cluster_indices, obstacles, msg->header);
+        auto cluster_indices = performClustering(high_intensity_obstacles);
+        RCLCPP_INFO(this->get_logger(), "Detected %zu clusters", cluster_indices.size());
+
+        publishClustersAndMarkers(cluster_indices, high_intensity_obstacles, msg->header);
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr performRansacSegmentation(const pcl::PointCloud<pcl::PointXYZI> &cloud)
@@ -115,6 +122,14 @@ private:
         seg.setModelType(pcl::SACMODEL_PLANE);
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setDistanceThreshold(ransac_distance_threshold_);
+
+        // Other useful settings you can set:
+        seg.setMaxIterations(80); // Maximum number of RANSAC iterations (default: 50)
+        // seg.setProbability(0.99);   // Probability of finding a valid model (default: 0.99)
+        seg.setEpsAngle(0.2);       // Angle epsilon for model fitting (for normals, in radians)
+        seg.setAxis(Eigen::Vector3f(0, 0, 1)); // Preferred axis for model (e.g., z-axis for ground plane)
+        // seg.setNormalDistanceWeight(0.1); // Weight for normal distance (if using normals)
+        // seg.setInputNormals(normals); // Set input normals (if available and needed)
 
         pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients);
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
@@ -185,9 +200,7 @@ private:
                 max_intensity = pt.intensity;
         }
 
-        std::cout << "Lowest intensity: " << min_intensity
-                  << ", Highest intensity: " << max_intensity
-                  << ", Threshold: " << intensity_threshold_ << std::endl;
+        RCLCPP_DEBUG(this->get_logger(), "Intensity range: [%f, %f], Threshold: %f", min_intensity, max_intensity, intensity_threshold_);
 
         pcl::PointCloud<pcl::PointXYZI>::Ptr high_intensity_obstacles(new pcl::PointCloud<pcl::PointXYZI>);
         for (const auto &pt : obstacles->points)
@@ -243,7 +256,27 @@ private:
         std::vector<pcl::PointIndices> cluster_indices;
         for (const auto &indices : all_cluster_indices)
         {
-            if (indices.indices.size() <= static_cast<size_t>(max_cluster_size_select_))
+            // Calculate the bounding box dimensions of the cluster
+            float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+            float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+
+            for (int idx : indices.indices)
+            {
+                const auto &pt = obstacles->points[idx];
+                min_pt[0] = std::min(min_pt[0], pt.x);
+                min_pt[1] = std::min(min_pt[1], pt.y);
+                min_pt[2] = std::min(min_pt[2], pt.z);
+                max_pt[0] = std::max(max_pt[0], pt.x);
+                max_pt[1] = std::max(max_pt[1], pt.y);
+                max_pt[2] = std::max(max_pt[2], pt.z);
+            }
+
+            float size_x = max_pt[0] - min_pt[0];
+            float size_y = max_pt[1] - min_pt[1];
+            float size_z = max_pt[2] - min_pt[2];
+
+            // Check if the cluster size exceeds the maximum allowed size
+            if (size_x <= max_cluster_size_meters_ && size_y <= max_cluster_size_meters_ && size_z <= max_cluster_size_meters_)
             {
                 cluster_indices.push_back(indices);
             }
@@ -278,6 +311,8 @@ private:
         // Process and publish the top x clusters
         int max_clusters = std::min(max_cluster_publish_, static_cast<int>(cluster_intensities.size()));
         size_t clusters_to_publish = std::min(cluster_intensities.size(), static_cast<size_t>(max_clusters));
+
+        RCLCPP_INFO(this->get_logger(), "Publishing %zu clusters as markers", clusters_to_publish);
 
         for (size_t i = 0; i < clusters_to_publish; ++i)
         {
@@ -323,7 +358,7 @@ private:
             m.scale.x = (max_pt[0] - min_pt[0]);
             m.scale.y = (max_pt[1] - min_pt[1]);
             m.scale.z = (max_pt[2] - min_pt[2]);
-            m.color.a = 0.5;
+            m.color.a = 0.85;
             m.color.r = static_cast<float>(r) / 255.0f;
             m.color.g = static_cast<float>(g) / 255.0f;
             m.color.b = static_cast<float>(b) / 255.0f;
@@ -351,6 +386,7 @@ private:
         declare_parameter<int>("max_cluster_size_select", 25);
         declare_parameter<double>("ransac_distance_threshold", 0.2);
         declare_parameter<double>("intensity_threshold", 100.0);
+        declare_parameter<double>("max_cluster_size_meters", 5.0); 
 
         get_parameter("input_topic", input_topic_);
         get_parameter("obstacles_topic", obstacles_topic_);
@@ -363,6 +399,7 @@ private:
         get_parameter("max_cluster_size_select", max_cluster_size_select_);
         get_parameter("ransac_distance_threshold", ransac_distance_threshold_);
         get_parameter("intensity_threshold", intensity_threshold_);
+        get_parameter("max_cluster_size_meters", max_cluster_size_meters_); 
     }
 
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
@@ -389,6 +426,7 @@ private:
     double ransac_distance_threshold_;
     int max_cluster_size_select_;
     double intensity_threshold_;
+    double max_cluster_size_meters_;
 };
 
 int main(int argc, char **argv)

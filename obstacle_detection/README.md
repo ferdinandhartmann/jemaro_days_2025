@@ -6,7 +6,7 @@ Deteckt obstacles from LiDAR pointcloud based on RANSAC, Intensity and clusterin
 
 ### Visualization
 ```bash 
-rviz2 -d /home/ferdinand/jemarodays/src/jemaro_days_2025/obstacle_detection/config/obstacle_detection.rviz
+rviz2 -d src/jemaro_days_2025/obstacle_detection/config/obstacle_detection.rviz
 ```
 
 ### Launch Real-Time Detection
