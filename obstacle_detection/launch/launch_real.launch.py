@@ -33,7 +33,15 @@ def generate_launch_description():
         ))
     )
 
+    obstacle_node = Node(
+        package='obstacle_detection',
+        executable='obstacle_detection_node',
+        name='obstacle_detector',
+        output='screen'
+    )
+
     return LaunchDescription([
         rviz2,
-        downsampling_launch
+        downsampling_launch,
+        obstacle_node
     ])

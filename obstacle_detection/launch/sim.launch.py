@@ -1,6 +1,7 @@
 from launch import LaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription
+from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -16,6 +17,13 @@ def generate_launch_description():
             'launch',
             'pointcloud_downsampling.launch.py'
         ))
+    )
+
+    obstacle_node = Node(
+        package='obstacle_detection',
+        executable='obstacle_detection_node',
+        name='obstacle_detector',
+        output='screen'
     )
 
     return LaunchDescription([
@@ -41,4 +49,5 @@ def generate_launch_description():
                 os.path.join(car_control_dir, 'launch', 'car_control.launch.py')
             )
         ),
+        obstacle_node,
     ])
