@@ -7,4 +7,7 @@
     leaf_size_x: 0.2
     leaf_size_y: 0.2
     leaf_size_z: 0.2
+    leaf_size_x_cutoff: 0.05 # Box dimension for the box in which all points will be reduced to one point
+    leaf_size_y_cutoff: 0.05
+    leaf_size_z_cutoff: 0.05
     downsample_all_data: true

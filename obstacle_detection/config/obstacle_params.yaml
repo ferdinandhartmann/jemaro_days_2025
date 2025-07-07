@@ -3,6 +3,12 @@ obstacle_detector:
     input_topic: "/ZOE3/os_node/points_downsampled_cutoff"
     obstacles_topic: "/obstacles"
     clusters_topic: "/obstacle_clusters"
-    fov_deg: 60.0
     max_cluster_publish: 5
     frame_id: "ZOE3/os_sensor"
+    cluster_tolerance: 0.5 # Cluster tolerance in meters (maximum distance between points in a cluster)
+    min_cluster_size: 2
+    max_cluster_size: 1000 # Maximum size of point group to consider as a cluster
+    max_cluster_size_select: 20 # Maximum size of cluster to select 
+    ransac_distance_threshold: 0.22 # Distance threshold (height?)
+    intensity_threshold: 1000.0 # Intensity threshold for filtering points
+
