@@ -71,7 +71,7 @@ private:
         call_count++;
 
         // Only clear the map every 5 calls
-        if (call_count % clear_map_interval_ == 1) {
+        if (call_count % clear_map_interval_ == 0) {
             std::fill(map_.data.begin(), map_.data.end(), 0);
         }
 
@@ -286,48 +286,48 @@ private:
         ec.setInputCloud(obstacles);
         ec.extract(all_cluster_indices);
 
-        std::vector<pcl::PointIndices> cluster_indices;
+        // std::vector<pcl::PointIndices> cluster_indices;
 
-        float global_min_z = std::numeric_limits<float>::max();
-        float global_max_z = std::numeric_limits<float>::lowest();
+        // float global_min_z = std::numeric_limits<float>::max();
+        // float global_max_z = std::numeric_limits<float>::lowest();
 
-        for (const auto &indices : all_cluster_indices)
-        {
-            float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-            float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        // for (const auto &indices : all_cluster_indices)
+        // {
+        //     float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        //     float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
 
-            for (int idx : indices.indices)
-            {
-                const auto &pt = obstacles->points[idx];
-                min_pt[0] = std::min(min_pt[0], pt.x);
-                min_pt[1] = std::min(min_pt[1], pt.y);
-                min_pt[2] = std::min(min_pt[2], pt.z);
-                max_pt[0] = std::max(max_pt[0], pt.x);
-                max_pt[1] = std::max(max_pt[1], pt.y);
-                max_pt[2] = std::max(max_pt[2], pt.z);
-            }
+        //     for (int idx : indices.indices)
+        //     {
+        //         const auto &pt = obstacles->points[idx];
+        //         min_pt[0] = std::min(min_pt[0], pt.x);
+        //         min_pt[1] = std::min(min_pt[1], pt.y);
+        //         min_pt[2] = std::min(min_pt[2], pt.z);
+        //         max_pt[0] = std::max(max_pt[0], pt.x);
+        //         max_pt[1] = std::max(max_pt[1], pt.y);
+        //         max_pt[2] = std::max(max_pt[2], pt.z);
+        //     }
 
-            float size_x = max_pt[0] - min_pt[0];
-            float size_y = max_pt[1] - min_pt[1];
-            float size_z = max_pt[2] - min_pt[2];
+        //     float size_x = max_pt[0] - min_pt[0];
+        //     float size_y = max_pt[1] - min_pt[1];
+        //     float size_z = max_pt[2] - min_pt[2];
 
-            // Update global min/max z
-            if (min_pt[2] < global_min_z)
-                global_min_z = min_pt[2];
-            if (max_pt[2] > global_max_z)
-                global_max_z = max_pt[2];
+        //     // Update global min/max z
+        //     if (min_pt[2] < global_min_z)
+        //         global_min_z = min_pt[2];
+        //     if (max_pt[2] > global_max_z)
+        //         global_max_z = max_pt[2];
 
-            // // Check if the cluster size exceeds the maximum allowed size and Remove clusters where max z > max_cluster_z_height_
-            if (size_x <= max_cluster_size_meters_ && size_y <= max_cluster_size_meters_ && size_z <= max_cluster_size_meters_ && max_pt[2] <= max_cluster_z_height_)
-            {
-                cluster_indices.push_back(indices);
-            }
-        }
+        //     // // Check if the cluster size exceeds the maximum allowed size and Remove clusters where max z > max_cluster_z_height_
+        //     if (size_x <= max_cluster_size_meters_ && size_y <= max_cluster_size_meters_ && size_z <= max_cluster_size_meters_ && max_pt[2] <= max_cluster_z_height_)
+        //     {
+        //         cluster_indices.push_back(indices);
+        //     }
+        // }
 
-        RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f", global_min_z, global_max_z);
+        // RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f", global_min_z, global_max_z);
 
-        return cluster_indices;
-        // return all_cluster_indices;
+        // return cluster_indices;
+        return all_cluster_indices;
     }
 
     std::vector<pcl::PointCloud<pcl::PointXYZI>> publishClustersAndMarkers(const std::vector<pcl::PointIndices> &cluster_indices, const pcl::PointCloud<pcl::PointXYZI>::Ptr &obstacles, const std_msgs::msg::Header &header)
@@ -337,35 +337,35 @@ private:
         visualization_msgs::msg::MarkerArray markers;
         size_t id = 0;
 
-        std::vector<std::pair<size_t, double>> cluster_intensities;
-        for (size_t c = 0; c < cluster_indices.size(); ++c)
-        {
-            const auto &indices = cluster_indices[c];
-            double total_intensity = 0.0;
-            for (int i : indices.indices)
-            {
-                total_intensity += obstacles->points[i].intensity;
-            }
-            double avg_intensity = total_intensity / indices.indices.size();
-            cluster_intensities.emplace_back(c, avg_intensity);
-        }
+        // std::vector<std::pair<size_t, double>> cluster_intensities;
+        // for (size_t c = 0; c < cluster_indices.size(); ++c)
+        // {
+        //     const auto &indices = cluster_indices[c];
+        //     double total_intensity = 0.0;
+        //     for (int i : indices.indices)
+        //     {
+        //         total_intensity += obstacles->points[i].intensity;
+        //     }
+        //     double avg_intensity = total_intensity / indices.indices.size();
+        //     cluster_intensities.emplace_back(c, avg_intensity);
+        // }
 
-        // Sort clusters by average intensity in descending order
-        std::sort(cluster_intensities.begin(), cluster_intensities.end(), [](const auto &a, const auto &b)
-                  { return a.second > b.second; });
+        // // Sort clusters by average intensity in descending order
+        // std::sort(cluster_intensities.begin(), cluster_intensities.end(), [](const auto &a, const auto &b)
+        //           { return a.second > b.second; });
 
-        // Process and publish the top x clusters
-        int max_clusters = std::min(max_cluster_publish_, static_cast<int>(cluster_intensities.size()));
-        size_t clusters_to_publish = std::min(cluster_intensities.size(), static_cast<size_t>(max_clusters));
+        // // Process and publish the top x clusters
+        // int max_clusters = std::min(max_cluster_publish_, static_cast<int>(cluster_intensities.size()));
+        int max_clusters = max_cluster_size_select_;
+        // size_t clusters_to_publish = std::min(cluster_intensities.size(), static_cast<size_t>(max_clusters));
+        size_t clusters_to_publish = std::min(cluster_indices.size(), static_cast<size_t>(max_clusters));
 
-        RCLCPP_INFO(this->get_logger(), "Publishing %zu clusters as markers", clusters_to_publish);
+        // RCLCPP_INFO(this->get_logger(), "Publishing %zu clusters as markers", clusters_to_publish);
 
-
-
+        // Publish up to clusters_to_publish clusters (in order, not sorted)
         for (size_t i = 0; i < clusters_to_publish; ++i)
         {
-            size_t cluster_index = cluster_intensities[i].first;
-            const auto &indices = cluster_indices[cluster_index];
+            const auto &indices = cluster_indices[i];
             uint8_t r = (i * 53) % 255;
             uint8_t g = (i * 97) % 255;
             uint8_t b = (i * 151) % 255;
@@ -374,21 +374,21 @@ private:
 
             for (int idx : indices.indices)
             {
-                const auto &pt = obstacles->points[idx];
-                pcl::PointXYZRGB rgb;
-                rgb.x = pt.x;
-                rgb.y = pt.y;
-                rgb.z = pt.z;
-                rgb.r = r;
-                rgb.g = g;
-                rgb.b = b;
-                clusters_rgb.points.push_back(rgb);
-                min_pt[0] = std::min(min_pt[0], pt.x);
-                min_pt[1] = std::min(min_pt[1], pt.y);
-                min_pt[2] = std::min(min_pt[2], pt.z);
-                max_pt[0] = std::max(max_pt[0], pt.x);
-                max_pt[1] = std::max(max_pt[1], pt.y);
-                max_pt[2] = std::max(max_pt[2], pt.z);
+            const auto &pt = obstacles->points[idx];
+            pcl::PointXYZRGB rgb;
+            rgb.x = pt.x;
+            rgb.y = pt.y;
+            rgb.z = pt.z;
+            rgb.r = r;
+            rgb.g = g;
+            rgb.b = b;
+            clusters_rgb.points.push_back(rgb);
+            min_pt[0] = std::min(min_pt[0], pt.x);
+            min_pt[1] = std::min(min_pt[1], pt.y);
+            min_pt[2] = std::min(min_pt[2], pt.z);
+            max_pt[0] = std::max(max_pt[0], pt.x);
+            max_pt[1] = std::max(max_pt[1], pt.y);
+            max_pt[2] = std::max(max_pt[2], pt.z);
             }
 
             // Publish marker for the cluster
@@ -424,12 +424,11 @@ private:
         std::vector<pcl::PointCloud<pcl::PointXYZI>> clusters_out;
         for (size_t i = 0; i < clusters_to_publish; ++i)
         {
-            size_t cluster_index = cluster_intensities[i].first;
-            const auto &indices = cluster_indices[cluster_index];
+            const auto &indices = cluster_indices[i];
             pcl::PointCloud<pcl::PointXYZI> cluster_cloud;
             for (int idx : indices.indices)
             {
-                cluster_cloud.points.push_back(obstacles->points[idx]);
+            cluster_cloud.points.push_back(obstacles->points[idx]);
             }
             cluster_cloud.width = cluster_cloud.points.size();
             cluster_cloud.height = 1;
