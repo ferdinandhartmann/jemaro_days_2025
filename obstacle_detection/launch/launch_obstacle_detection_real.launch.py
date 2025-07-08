@@ -52,7 +52,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_tf_pub_custom_map',
-        arguments=['-1010', '-740', '0', '0', '0', '0', 'custom_map', 'map'],
+        arguments=['-980', '-760', '0', '0', '0', '0', 'custom_map', 'map'],
         output='screen'
     )
 
