@@ -54,30 +54,78 @@ public:
     }
 
 private:
+    // Add at top of class:
+    struct Track
+    {
+        int id;
+        Eigen::Vector2f centroid;
+        int age;    // #frames seen
+        int missed; // #frames missed in a row
+    };
+
+
     void initialize_map()
     {
-        int width = 6000; // 150 cells in width
-        int height = 6000; // 150 cells in height
-        float resolution = 0.25; // 0.5 m per cell
 
-        map_.info.resolution = resolution; // 1 m per cell
-        map_.info.width = width;
-        map_.info.height = height;
+        map_.info.resolution = resolution_; // 1 m per cell
+        map_.info.width = width_;
+        map_.info.height = height_;
         // map_.info.origin.position.x = -width / 2 * resolution;
-        map_.info.origin.position.x = 0;
-        map_.info.origin.position.y = 0;
+        map_.info.origin.position.x = offset_x_;
+        map_.info.origin.position.y = offset_y_;
         map_.info.origin.position.z = 0.0;
         map_.info.origin.orientation.w = 1.0;
 
         // Initialize all cells as free (0)
         map_.data.resize(map_.info.width * map_.info.height, 0);
     }
+
     void add_obstacles_and_publish_map()
     {
+        updateTracks(last_clusters_);
+
+
+
+        static int call_count = 0;
+        call_count++;
+
+        // Only clear the map every 5 calls
+        if (call_count % clear_map_interval_ == 0)
+        {
+            std::fill(map_.data.begin(), map_.data.end(), 0);
+        }
+
+
+
+
+
         // Transform clusters to map frame if needed
         std::vector<pcl::PointCloud<pcl::PointXYZI>> transformed_clusters;
-        for (const auto &cluster : last_clusters_)
+        // For each track, associate it with the closest cluster in last_clusters_ (if available)
+        for (size_t track_idx = 0; track_idx < tracks_.size(); ++track_idx)
         {
+            const auto &tr = tracks_[track_idx];
+            // for every track that’s old enough:
+            if (tr.age < min_age_frames_)
+                continue;
+
+            // Find the closest cluster to this track's centroid
+            size_t best_cluster = 0;
+            float best_dist = std::numeric_limits<float>::max();
+            for (size_t c = 0; c < last_clusters_.size(); ++c)
+            {
+                Eigen::Vector2f cluster_centroid = computeCentroid(last_clusters_[c]);
+                float dist = (tr.centroid - cluster_centroid).norm();
+                if (dist < best_dist)
+                {
+                    best_dist = dist;
+                    best_cluster = c;
+                }
+            }
+
+            // Use the best matching cluster for this track
+            const auto &cluster = last_clusters_.empty() ? pcl::PointCloud<pcl::PointXYZI>() : last_clusters_[best_cluster];
+
             pcl::PointCloud<pcl::PointXYZI> transformed_cluster;
             for (const auto &point : cluster)
             {
@@ -101,20 +149,9 @@ private:
                 }
                 transformed_cluster.push_back(pt);
             }
-            transformed_clusters.push_back(transformed_cluster);
-        }
 
-        static int call_count = 0;
-        call_count++;
-
-        // Only clear the map every 5 calls
-        if (call_count % clear_map_interval_ == 0) {
-            std::fill(map_.data.begin(), map_.data.end(), 0);
-        }
-
-        for (const auto &cluster : transformed_clusters)
-        {
-            for (const auto &point : cluster)
+            //draw on map
+            for (const auto &point : transformed_cluster)
             {
                 // Convert point to map grid coordinates
                 int map_x = static_cast<int>((point.x - map_.info.origin.position.x) / map_.info.resolution);
@@ -138,6 +175,7 @@ private:
                 }
             }
         }
+
 
         map_.header.stamp = this->now();
         map_.header.frame_id = "map";
@@ -184,6 +222,95 @@ private:
 
         add_obstacles_and_publish_map();
     }
+
+
+    // New helper to compute centroid:
+    Eigen::Vector2f computeCentroid(const pcl::PointCloud<pcl::PointXYZI> &cloud)
+    {
+        Eigen::Vector4f c;
+        pcl::compute3DCentroid(cloud, c);
+        return {c.x(), c.y()};
+    }
+
+    // After publishClustersAndMarkers (i.e. when clusters_out ready):
+    void updateTracks(const std::vector<pcl::PointCloud<pcl::PointXYZI>> &clusters)
+    {
+        RCLCPP_INFO(this->get_logger(), "updateTracks: Starting with %zu clusters and %zu existing tracks", clusters.size(), tracks_.size());
+
+        std::vector<Eigen::Vector2f> cents;
+        for (auto &cl : clusters) {
+            cents.push_back(computeCentroid(cl));
+        }
+
+        RCLCPP_INFO(this->get_logger(), "updateTracks: Computed %zu centroids", cents.size());
+
+        // Flag arrays
+        std::vector<bool> used_new(cents.size(), false);
+        std::vector<bool> used_old(tracks_.size(), false);
+
+        // 1) Match new centroids to existing tracks
+        for (size_t i = 0; i < cents.size(); ++i)
+        {
+            float best_d = max_match_dist_;
+            int best_t = -1;
+            for (size_t t = 0; t < tracks_.size(); ++t)
+            {
+                if (used_old[t])
+                    continue;
+                float d = (tracks_[t].centroid - cents[i]).norm();
+                if (d < best_d)
+                {
+                    best_d = d;
+                    best_t = t;
+                }
+            }
+            if (best_t >= 0)
+            {
+                // RCLCPP_INFO(this->get_logger(), "updateTracks: Matched centroid %zu to track %d with distance %f", i, best_t, best_d);
+                tracks_[best_t].centroid = cents[i];
+                tracks_[best_t].age++;
+                tracks_[best_t].missed = 0;
+                used_new[i] = used_old[best_t] = true;
+            }
+        }
+
+        // 2) unmatched new → spawn
+        for (size_t i = 0; i < cents.size(); ++i)
+        {
+            if (!used_new[i])
+            {
+                // RCLCPP_INFO(this->get_logger(), "updateTracks: Spawning new track for centroid %zu", i);
+                tracks_.push_back({next_track_id_++, cents[i], 1, 0});
+            }
+        }
+
+        used_old.resize(tracks_.size(), false);
+
+        // 3) unmatched old → increment missed
+        for (size_t t = 0; t < tracks_.size(); ++t)
+        {
+            if (!used_old[t])
+            {
+                // RCLCPP_INFO(this->get_logger(), "updateTracks: Incrementing missed count for track %d", tracks_[t].id);
+                tracks_[t].missed++;
+            }
+        }
+
+        // 4) prune:
+        size_t before_prune = tracks_.size();
+        tracks_.erase(
+            std::remove_if(tracks_.begin(), tracks_.end(),
+                           [&](const Track &tr)
+                           {
+                               return tr.missed > max_missed_frames_;
+                           }),
+            tracks_.end());
+        size_t after_prune = tracks_.size();
+
+        RCLCPP_INFO(this->get_logger(), "updateTracks: Pruned %zu tracks, %zu remaining", before_prune - after_prune, after_prune);
+    }
+
+    
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr performRansacSegmentation(const pcl::PointCloud<pcl::PointXYZI> &cloud)
     {
@@ -493,6 +620,15 @@ private:
         declare_parameter<double>("inflation_radius", 2.0);
         declare_parameter<int>("clear_map_interval", 1);
 
+        declare_parameter<float>("max_match_dist", 1.0);
+        declare_parameter<int>("max_missed_frames", 10);
+        declare_parameter<int>("min_age_frames", 2);
+        declare_parameter<int>("width", 2000);
+        declare_parameter<int>("height", 2000);
+        declare_parameter<float>("offset_x", 600.0);
+        declare_parameter<float>("offset_y", 400.0);
+        declare_parameter<float>("resolution", 0.25);
+
         get_parameter("input_topic", input_topic_);
         get_parameter("obstacles_topic", obstacles_topic_);
         get_parameter("clusters_topic", clusters_topic_);
@@ -508,6 +644,15 @@ private:
         get_parameter("max_cluster_z_height", max_cluster_z_height_);
         get_parameter("inflation_radius", inflation_radius_);
         get_parameter("clear_map_interval", clear_map_interval_);
+
+        get_parameter("max_match_dist", max_match_dist_);
+        get_parameter("max_missed_frames", max_missed_frames_);
+        get_parameter("min_age_frames", min_age_frames_);
+        get_parameter("width", width_);
+        get_parameter("height", height_);
+        get_parameter("offset_x", offset_x_);
+        get_parameter("offset_y", offset_y_);
+        get_parameter("resolution", resolution_);
     }
 
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
@@ -538,7 +683,19 @@ private:
     double max_cluster_z_height_;
 
     double inflation_radius_; // Radius for inflation in map cells
-    int clear_map_interval_; 
+    int clear_map_interval_;
+
+    std::vector<Track> tracks_;
+    int next_track_id_ = 0;
+    float max_match_dist_; // meters
+    int max_missed_frames_;
+    int min_age_frames_ ;
+
+    int width_;        // 150 cells in width
+    int height_;       // 150 cells in height
+    float resolution_; // 0.5 m per cell
+    float offset_x_; // Offset in x direction for map origin
+    float offset_y_; // Offset in y direction for map origin
 
     std::vector<pcl::PointCloud<pcl::PointXYZI>> last_clusters_; // Store the last clusters
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
