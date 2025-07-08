@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+import os
 
 package_name = 'path_planning'
 
@@ -10,6 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/' + f for f in os.listdir('launch') if f.endswith('.py')]),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,6 +23,7 @@ setup(
     entry_points={
         'console_scripts': [
             'path_planning = path_planning.path_planning:main',
+            'map_publisher = path_planning.map_publisher:main',
         ],
     },
 )
