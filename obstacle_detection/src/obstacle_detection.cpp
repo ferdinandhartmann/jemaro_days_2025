@@ -32,6 +32,8 @@ public:
     {
         initializeParameters();
 
+        last_road_points_ = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
+
         rclcpp::QoS qos = rclcpp::SensorDataQoS().best_effort();
         sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
             input_topic_, qos,
@@ -41,8 +43,9 @@ public:
         clusters_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(clusters_topic_, 10);
         high_intensity_obstacles_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("high_intensity_ransac", 10);
         marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("obstacle_boxes", 10);
+        road_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("road_points", 10);
 
-        publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/map", qos);
+        map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/jemaro_map", qos);
         // publish_timer = create_wall_timer(100ms,    // rate
         //   [&](){callback_time();});
         publish_timer = create_wall_timer(
@@ -63,28 +66,26 @@ private:
         int missed; // #frames missed in a row
     };
 
+    using CloudI = pcl::PointCloud<pcl::PointXYZI>;
+    using CloudIPtr = CloudI::Ptr;
 
     void initialize_map()
     {
-
         map_.info.resolution = resolution_; // 1 m per cell
         map_.info.width = width_;
         map_.info.height = height_;
-        // map_.info.origin.position.x = -width / 2 * resolution;
         map_.info.origin.position.x = offset_x_;
         map_.info.origin.position.y = offset_y_;
         map_.info.origin.position.z = 0.0;
         map_.info.origin.orientation.w = 1.0;
 
-        // Initialize all cells as free (0)
-        map_.data.resize(map_.info.width * map_.info.height, 0);
+        // Initialize all cells as unknown (50)
+        map_.data.resize(map_.info.width * map_.info.height, 50);
     }
 
     void add_obstacles_and_publish_map()
     {
         updateTracks(last_clusters_);
-
-
 
         static int call_count = 0;
         call_count++;
@@ -92,15 +93,50 @@ private:
         // Only clear the map every 5 calls
         if (call_count % clear_map_interval_ == 0)
         {
-            std::fill(map_.data.begin(), map_.data.end(), 0);
+            std::fill(map_.data.begin(), map_.data.end(), 50);
         }
 
+        // draw road points on the map as free space
+        for (const auto &pt_in : *last_road_points_)
+        {
+            // transform to map frame
+            geometry_msgs::msg::PointStamped pin, pout;
+            pin.header.frame_id = frame_id_;
+            pin.header.stamp = rclcpp::Time(0);
+            pin.point.x = pt_in.x;
+            pin.point.y = pt_in.y;
+            pin.point.z = pt_in.z;
 
+            try
+            {
+                pout = tf_buffer_->transform(pin, "map", tf2::durationFromSec(0.05));
+            }
+            catch (const tf2::TransformException &e)
+            {
+                continue; // skip those you can’t transform
+            }
 
+            int mx = static_cast<int>((pout.point.x - map_.info.origin.position.x) / map_.info.resolution);
+            int my = static_cast<int>((pout.point.y - map_.info.origin.position.y) / map_.info.resolution);
 
+            // Draw a square around the point
+            for (int dx = -inflation_radius_freespace_; dx <= inflation_radius_freespace_; ++dx)
+            {
+                for (int dy = -inflation_radius_freespace_; dy <= inflation_radius_freespace_; ++dy)
+                {
+                    int nx = mx + dx;
+                    int ny = my + dy;
 
-        // Transform clusters to map frame if needed
-        std::vector<pcl::PointCloud<pcl::PointXYZI>> transformed_clusters;
+                    if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
+                        ny >= 0 && ny < static_cast<int>(map_.info.height))
+                    {
+                        int index = ny * map_.info.width + nx;
+                        map_.data[index] = 0; // Free
+                    }
+                }
+            }
+        }
+
         // For each track, associate it with the closest cluster in last_clusters_ (if available)
         for (size_t track_idx = 0; track_idx < tracks_.size(); ++track_idx)
         {
@@ -138,19 +174,23 @@ private:
                 pt_in.point.y = pt.y;
                 pt_in.point.z = pt.z;
 
-                try {
+                try
+                {
                     pt_out = tf_buffer_->transform(pt_in, "map", tf2::durationFromSec(0.05));
                     pt.x = pt_out.point.x;
                     pt.y = pt_out.point.y;
                     pt.z = pt_out.point.z;
-                } catch (const tf2::TransformException &ex) {
+                }
+                catch (const tf2::TransformException &ex)
+                {
                     RCLCPP_WARN(this->get_logger(), "TF transform failed: %s", ex.what());
                     // If transform fails, keep original point
                 }
                 transformed_cluster.push_back(pt);
             }
 
-            //draw on map
+
+            // draw on map
             for (const auto &point : transformed_cluster)
             {
                 // Convert point to map grid coordinates
@@ -176,26 +216,9 @@ private:
             }
         }
 
-
         map_.header.stamp = this->now();
         map_.header.frame_id = "map";
-        publisher_->publish(map_);
-    }
-
-    void draw_rect(int x_start, int y_start, int width, int height, int value)
-    {
-        for (int y = y_start; y < y_start + height; y++)
-        {
-            for (int x = x_start; x < x_start + width; x++)
-            {
-                if (x >= 0 && x < static_cast<int>(map_.info.width) &&
-                    y >= 0 && y < static_cast<int>(map_.info.height))
-                {
-                    int index = y * map_.info.width + x;
-                    map_.data[index] = value; // Mark as occupied
-                }
-            }
-        }
+        map_publisher_->publish(map_);
     }
 
     void cloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
@@ -205,10 +228,17 @@ private:
 
         RCLCPP_INFO(this->get_logger(), "Received cloud with %zu points", cloud.size());
 
-        auto obstacles = performRansacSegmentation(cloud);
+        auto [obstacles, road_points] = performRansacSegmentation(cloud);
+        last_road_points_ = road_points;
         RCLCPP_INFO(this->get_logger(), "RANSAC removed %zu points, %zu points remain", cloud.size() - obstacles->size(), obstacles->size());
 
         publishObstacles(obstacles, msg->header);
+
+        // publish the road points in their own topic
+        sensor_msgs::msg::PointCloud2 road_msg;
+        pcl::toROSMsg(*road_points, road_msg);
+        road_msg.header = msg->header;
+        road_pub_->publish(road_msg);
 
         auto high_intensity_obstacles = filterHighIntensityObstacles(obstacles);
         RCLCPP_INFO(this->get_logger(), "Filtered high-intensity obstacles: %zu points", high_intensity_obstacles->size());
@@ -222,7 +252,6 @@ private:
 
         add_obstacles_and_publish_map();
     }
-
 
     // New helper to compute centroid:
     Eigen::Vector2f computeCentroid(const pcl::PointCloud<pcl::PointXYZI> &cloud)
@@ -238,7 +267,8 @@ private:
         RCLCPP_INFO(this->get_logger(), "updateTracks: Starting with %zu clusters and %zu existing tracks", clusters.size(), tracks_.size());
 
         std::vector<Eigen::Vector2f> cents;
-        for (auto &cl : clusters) {
+        for (auto &cl : clusters)
+        {
             cents.push_back(computeCentroid(cl));
         }
 
@@ -310,37 +340,40 @@ private:
         RCLCPP_INFO(this->get_logger(), "updateTracks: Pruned %zu tracks, %zu remaining", before_prune - after_prune, after_prune);
     }
 
-    
-
-    pcl::PointCloud<pcl::PointXYZI>::Ptr performRansacSegmentation(const pcl::PointCloud<pcl::PointXYZI> &cloud)
+    std::pair<ObstacleDetector::CloudIPtr, ObstacleDetector::CloudIPtr>
+    performRansacSegmentation(const CloudI &cloud)
     {
+        // Set up RANSAC
         pcl::SACSegmentation<pcl::PointXYZI> seg;
         seg.setOptimizeCoefficients(true);
         seg.setModelType(pcl::SACMODEL_PLANE);
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setDistanceThreshold(ransac_distance_threshold_);
-
-        // Other useful settings you can set:
-        seg.setMaxIterations(80); // Maximum number of RANSAC iterations (default: 50)
-        // seg.setProbability(0.99);   // Probability of finding a valid model (default: 0.99)
-        seg.setEpsAngle(0.2);       // Angle epsilon for model fitting (for normals, in radians)
-        seg.setAxis(Eigen::Vector3f(0, 0, 1)); // Preferred axis for model (e.g., z-axis for ground plane)
-        // seg.setNormalDistanceWeight(0.1); // Weight for normal distance (if using normals)
-        // seg.setInputNormals(normals); // Set input normals (if available and needed)
-
-        pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients);
-        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+        seg.setMaxIterations(80);
+        seg.setEpsAngle(0.2);
+        seg.setAxis(Eigen::Vector3f(0, 0, 1));
         seg.setInputCloud(cloud.makeShared());
+
+        // Compute inliers (the plane = “road”)
+        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+        pcl::ModelCoefficients::Ptr coeff(new pcl::ModelCoefficients);
         seg.segment(*inliers, *coeff);
 
+        // Extract the road (inliers)
         pcl::ExtractIndices<pcl::PointXYZI> extract;
         extract.setInputCloud(cloud.makeShared());
         extract.setIndices(inliers);
-        extract.setNegative(true);
 
-        pcl::PointCloud<pcl::PointXYZI>::Ptr obstacles(new pcl::PointCloud<pcl::PointXYZI>);
+        CloudIPtr road(new CloudI);
+        extract.setNegative(false);
+        extract.filter(*road);
+
+        // Extract the obstacles (outliers)
+        CloudIPtr obstacles(new CloudI);
+        extract.setNegative(true);
         extract.filter(*obstacles);
-        return obstacles;
+
+        return {obstacles, road};
     }
 
     void publishObstacles(const pcl::PointCloud<pcl::PointXYZI>::Ptr &obstacles, const std_msgs::msg::Header &header)
@@ -450,48 +483,61 @@ private:
         ec.setInputCloud(obstacles);
         ec.extract(all_cluster_indices);
 
-        // std::vector<pcl::PointIndices> cluster_indices;
+        std::vector<pcl::PointIndices> cluster_indices;
 
-        // float global_min_z = std::numeric_limits<float>::max();
-        // float global_max_z = std::numeric_limits<float>::lowest();
+        float global_min_z = std::numeric_limits<float>::max();
+        float global_max_z = std::numeric_limits<float>::lowest();
 
-        // for (const auto &indices : all_cluster_indices)
-        // {
-        //     float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        //     float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        for (const auto &indices : all_cluster_indices)
+        {
+            float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+            float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+            float total_intensity = 0.0;
+            float max_intensity = std::numeric_limits<float>::lowest();
 
-        //     for (int idx : indices.indices)
-        //     {
-        //         const auto &pt = obstacles->points[idx];
-        //         min_pt[0] = std::min(min_pt[0], pt.x);
-        //         min_pt[1] = std::min(min_pt[1], pt.y);
-        //         min_pt[2] = std::min(min_pt[2], pt.z);
-        //         max_pt[0] = std::max(max_pt[0], pt.x);
-        //         max_pt[1] = std::max(max_pt[1], pt.y);
-        //         max_pt[2] = std::max(max_pt[2], pt.z);
-        //     }
+            for (int idx : indices.indices)
+            {
+            const auto &pt = obstacles->points[idx];
+            min_pt[0] = std::min(min_pt[0], pt.x);
+            min_pt[1] = std::min(min_pt[1], pt.y);
+            min_pt[2] = std::min(min_pt[2], pt.z);
+            max_pt[0] = std::max(max_pt[0], pt.x);
+            max_pt[1] = std::max(max_pt[1], pt.y);
+            max_pt[2] = std::max(max_pt[2], pt.z);
 
-        //     float size_x = max_pt[0] - min_pt[0];
-        //     float size_y = max_pt[1] - min_pt[1];
-        //     float size_z = max_pt[2] - min_pt[2];
+            total_intensity += pt.intensity;
+            max_intensity = std::max(max_intensity, pt.intensity);
+            }
 
-        //     // Update global min/max z
-        //     if (min_pt[2] < global_min_z)
-        //         global_min_z = min_pt[2];
-        //     if (max_pt[2] > global_max_z)
-        //         global_max_z = max_pt[2];
+            float size_x = max_pt[0] - min_pt[0];
+            float size_y = max_pt[1] - min_pt[1];
+            float size_z = max_pt[2] - min_pt[2];
+            float avg_intensity = total_intensity / indices.indices.size();
 
-        //     // // Check if the cluster size exceeds the maximum allowed size and Remove clusters where max z > max_cluster_z_height_
-        //     if (size_x <= max_cluster_size_meters_ && size_y <= max_cluster_size_meters_ && size_z <= max_cluster_size_meters_ && max_pt[2] <= max_cluster_z_height_)
-        //     {
-        //         cluster_indices.push_back(indices);
-        //     }
-        // }
+            // Update global min/max z
+            if (min_pt[2] < global_min_z)
+            global_min_z = min_pt[2];
+            if (max_pt[2] > global_max_z)
+            global_max_z = max_pt[2];
 
-        // RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f", global_min_z, global_max_z);
+            // Check if the cluster meets all conditions
+            if (size_x <= max_cluster_size_x_ &&
+            size_y <= max_cluster_size_y_ &&
+            size_z >= min_cluster_size_z_ &&
+            max_pt[2] <= max_cluster_z_height_ &&
+            indices.indices.size() <= static_cast<size_t>(max_selected_cluster_points_) )
+            // avg_intensity < intensity_avg_threshold_ && // Average intensity below threshold
+            // max_intensity < intensity_max_threshold_)
+           // Maximum intensity below threshold
+            {
+            cluster_indices.push_back(indices);
+            }
+        }
 
-        // return cluster_indices;
-        return all_cluster_indices;
+        RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f", global_min_z, global_max_z);
+
+        return cluster_indices;
+        // return all_cluster_indices;
     }
 
     std::vector<pcl::PointCloud<pcl::PointXYZI>> publishClustersAndMarkers(const std::vector<pcl::PointIndices> &cluster_indices, const pcl::PointCloud<pcl::PointXYZI>::Ptr &obstacles, const std_msgs::msg::Header &header)
@@ -520,7 +566,7 @@ private:
 
         // // Process and publish the top x clusters
         // int max_clusters = std::min(max_cluster_publish_, static_cast<int>(cluster_intensities.size()));
-        int max_clusters = max_cluster_size_select_;
+        int max_clusters = 100000;
         // size_t clusters_to_publish = std::min(cluster_intensities.size(), static_cast<size_t>(max_clusters));
         size_t clusters_to_publish = std::min(cluster_indices.size(), static_cast<size_t>(max_clusters));
 
@@ -612,12 +658,15 @@ private:
         declare_parameter<double>("cluster_tolerance", 0.5);
         declare_parameter<int>("min_cluster_size", 10);
         declare_parameter<int>("max_cluster_size", 25000);
-        declare_parameter<int>("max_cluster_size_select", 25);
+        declare_parameter<int>("max_selected_cluster_points", 25);
         declare_parameter<double>("ransac_distance_threshold", 0.2);
         declare_parameter<double>("intensity_threshold", 100.0);
-        declare_parameter<double>("max_cluster_size_meters", 5.0);
+        declare_parameter<double>("max_cluster_size_x", 5.0);
+        declare_parameter<double>("max_cluster_size_y", 5.0);
+        declare_parameter<double>("min_cluster_size_z", 5.0);
         declare_parameter<double>("max_cluster_z_height", 0.5);
         declare_parameter<double>("inflation_radius", 2.0);
+        declare_parameter<double>("inflation_radius_freespace", 1.0);
         declare_parameter<int>("clear_map_interval", 1);
 
         declare_parameter<float>("max_match_dist", 1.0);
@@ -637,12 +686,15 @@ private:
         get_parameter("cluster_tolerance", cluster_tolerance_);
         get_parameter("min_cluster_size", min_cluster_size_);
         get_parameter("max_cluster_size", max_cluster_size_);
-        get_parameter("max_cluster_size_select", max_cluster_size_select_);
+        get_parameter("max_selected_cluster_points", max_selected_cluster_points_);
         get_parameter("ransac_distance_threshold", ransac_distance_threshold_);
         get_parameter("intensity_threshold", intensity_threshold_);
-        get_parameter("max_cluster_size_meters", max_cluster_size_meters_);
+        get_parameter("max_cluster_size_x", max_cluster_size_x_);
+        get_parameter("max_cluster_size_y", max_cluster_size_y_);
+        get_parameter("min_cluster_size_z", min_cluster_size_z_);
         get_parameter("max_cluster_z_height", max_cluster_z_height_);
         get_parameter("inflation_radius", inflation_radius_);
+        get_parameter("inflation_radius_freespace", inflation_radius_freespace_);
         get_parameter("clear_map_interval", clear_map_interval_);
 
         get_parameter("max_match_dist", max_match_dist_);
@@ -660,8 +712,9 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr clusters_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr high_intensity_obstacles_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr road_pub_;
 
-    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr publisher_;
+    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr map_publisher_;
     rclcpp::TimerBase::SharedPtr publish_timer;
 
     nav_msgs::msg::OccupancyGrid map_;
@@ -677,27 +730,33 @@ private:
     int min_cluster_size_;
     int max_cluster_size_;
     double ransac_distance_threshold_;
-    int max_cluster_size_select_;
+    int max_selected_cluster_points_;
     double intensity_threshold_;
-    double max_cluster_size_meters_;
+    double max_cluster_size_x_;
+    double max_cluster_size_y_;
+    double min_cluster_size_z_;
     double max_cluster_z_height_;
 
     double inflation_radius_; // Radius for inflation in map cells
+
+    double inflation_radius_freespace_;
     int clear_map_interval_;
 
     std::vector<Track> tracks_;
     int next_track_id_ = 0;
     float max_match_dist_; // meters
     int max_missed_frames_;
-    int min_age_frames_ ;
+    int min_age_frames_;
 
     int width_;        // 150 cells in width
     int height_;       // 150 cells in height
     float resolution_; // 0.5 m per cell
-    float offset_x_; // Offset in x direction for map origin
-    float offset_y_; // Offset in y direction for map origin
+    float offset_x_;   // Offset in x direction for map origin
+    float offset_y_;   // Offset in y direction for map origin
 
     std::vector<pcl::PointCloud<pcl::PointXYZI>> last_clusters_; // Store the last clusters
+    pcl::PointCloud<pcl::PointXYZI>::Ptr last_road_points_;
+
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     tf2_ros::TransformListener tf_listener_;
 };
