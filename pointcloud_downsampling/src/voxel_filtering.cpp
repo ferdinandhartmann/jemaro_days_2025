@@ -38,23 +38,15 @@ void PointcloudDownsampling::voxelFiltering(const sensor_msgs::msg::PointCloud2:
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud;
   pcl::fromROSMsg(*msg, pcl_cloud);
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud_filtered;
-
-  // Filter points within a 60-degree angle in front of the vehicle
-  pcl::PointCloud<pcl::PointXYZI> pcl_cloud_angle;
-  for (const auto& point : pcl_cloud) {
-    float angle = std::atan2(point.y, point.x) * 180.0 / M_PI; // Calculate angle in degrees
-    if (angle >= -22.0 && angle <= 22.0) {
-      pcl_cloud_angle.push_back(point);
-    }
-  }
-
-  // Remove the top 50% of the points (based on z-coordinate)
+    // Filter points within specified x, y, z cutoffs
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud_z;
-  for (const auto& point : pcl_cloud_angle) {
-    if (point.z <= -1.18) { // Assuming 0.0 is the midpoint for z-coordinate
+  for (const auto & point : pcl_cloud) {
+    if (
+        point.x >= 0.0 && point.x <= 100.0 && point.y >= -4.3 && point.y <= 4.3 && point.z <= -0.9) {
       pcl_cloud_z.push_back(point);
     }
-  }
+    }
+
 
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud_z_filtered;
 

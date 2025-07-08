@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Map1
       Splitter Ratio: 0.5706806182861328
     Tree Height: 1087
   - Class: rviz_common/Selection
@@ -51,52 +50,58 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 100
       Frames:
-        All Enabled: true
+        All Enabled: false
         ZOE3/EKF_RTK_frame:
-          Value: true
+          Value: false
         ZOE3/EKF_UBLOX_frame:
-          Value: true
+          Value: false
         ZOE3/base_link:
           Value: true
         ZOE3/blkfl:
-          Value: true
+          Value: false
         ZOE3/blkfr:
-          Value: true
+          Value: false
+        ZOE3/blkrl:
+          Value: false
         ZOE3/blkrr:
-          Value: true
+          Value: false
         ZOE3/camera_front:
-          Value: true
+          Value: false
         ZOE3/camera_rear:
-          Value: true
+          Value: false
         ZOE3/gps:
-          Value: true
+          Value: false
         ZOE3/imu:
-          Value: true
+          Value: false
         ZOE3/laser_ref:
-          Value: true
+          Value: false
         ZOE3/laser_scan:
-          Value: true
+          Value: false
         ZOE3/map_meas:
-          Value: true
+          Value: false
         ZOE3/os_sensor:
           Value: true
         ZOE3/rtk_frame:
-          Value: true
+          Value: false
         ZOE3/sensor_ref:
-          Value: true
+          Value: false
+        ZOE3/steering_front:
+          Value: false
+        ZOE3/steering_rear:
+          Value: false
         ZOE3/ublox_frame:
-          Value: true
+          Value: false
         ZOE3/wfl:
           Value: true
         ZOE3/wfr:
           Value: true
         ZOE3/wrl:
-          Value: true
+          Value: false
         ZOE3/wrr:
-          Value: true
+          Value: false
         map:
           Value: true
-      Marker Scale: 5
+      Marker Scale: 4
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -113,7 +118,11 @@ Visualization Manager:
                 {}
               ZOE3/blkfr:
                 {}
+              ZOE3/blkrl:
+                {}
               ZOE3/blkrr:
+                {}
+              ZOE3/camera_front:
                 {}
               ZOE3/camera_rear:
                 {}
@@ -127,6 +136,10 @@ Visualization Manager:
                 {}
               ZOE3/os_sensor:
                 {}
+            ZOE3/steering_front:
+              {}
+            ZOE3/steering_rear:
+              {}
             ZOE3/wfl:
               {}
             ZOE3/wfr:
@@ -231,13 +244,13 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1672.3333740234375
+      Max Intensity: 1667
       Min Color: 150; 0; 0
-      Min Intensity: 5
+      Min Intensity: 6
       Name: PointCloud2 downsampled
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 1
+      Size (Pixels): 4
       Size (m): 0.009999999776482582
       Style: Points
       Topic:
@@ -262,12 +275,12 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1310
+      Max Intensity: 1377
       Min Color: 150; 0; 0
-      Min Intensity: 19
+      Min Intensity: 32
       Name: PointCloud2 cutoff
       Position Transformer: XYZ
       Selectable: true
@@ -283,7 +296,7 @@ Visualization Manager:
         Value: /ZOE3/os_node/points_downsampled_cutoff
       Use Fixed Frame: true
       Use rainbow: false
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -318,7 +331,7 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: false
       Value: true
-    - Alpha: 1
+    - Alpha: 0.800000011920929
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -334,12 +347,12 @@ Visualization Manager:
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
-      Min Color: 0; 0; 0
+      Min Color: 170; 0; 0
       Min Intensity: 0
       Name: "RANSAC High Intensity "
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 5
+      Size (Pixels): 4
       Size (m): 0.009999999776482582
       Style: Points
       Topic:
@@ -350,7 +363,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /high_intensity_ransac
       Use Fixed Frame: true
-      Use rainbow: true
+      Use rainbow: false
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -373,7 +386,7 @@ Visualization Manager:
       Name: Obstacles clustered
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 8
+      Size (Pixels): 12
       Size (m): 0.009999999776482582
       Style: Points
       Topic:
@@ -398,7 +411,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /obstacle_boxes
       Value: false
-    - Alpha: 0.30000001192092896
+    - Alpha: 0.5
       Class: rviz_default_plugins/Map
       Color Scheme: map
       Draw Behind: false
@@ -410,15 +423,49 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /map
+        Value: /jemaro_map
       Update Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /map_updates
+        Value: /jemaro_map_updates
       Use Timestamp: false
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 0.28633439540863037
+        Min Value: -0.29940736293792725
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 48; 89; 184
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 1186
+      Min Color: 0; 0; 0
+      Min Intensity: 60
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /road_points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -465,25 +512,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 90.88524627685547
+      Distance: 17.923751831054688
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -8.142483711242676
-        Y: -7.898334503173828
-        Z: 11.579438209533691
+        X: -6.940210819244385
+        Y: -4.7962846755981445
+        Z: 6.4337687492370605
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4397963285446167
+      Pitch: 0.8897961974143982
       Target Frame: ZOE3/os_sensor
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.46039167046546936
+      Yaw: 0.4353918433189392
     Saved: ~
 Window Geometry:
   Displays:
@@ -501,5 +548,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1487
-  X: 120
-  Y: 222
+  X: 56
+  Y: 90
