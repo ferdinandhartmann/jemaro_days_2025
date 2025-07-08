@@ -42,7 +42,7 @@ void PointcloudDownsampling::voxelFiltering(const sensor_msgs::msg::PointCloud2:
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud_z;
   for (const auto & point : pcl_cloud) {
     if (
-        point.x >= 0.0 && point.x <= 70.0 && point.y >= -4.0 && point.y <= 4.0 && point.z <= -1.3) {
+        point.x >= 0.0 && point.x <= 100.0 && point.y >= -4.3 && point.y <= 4.3 && point.z <= -0.9) {
       pcl_cloud_z.push_back(point);
     }
     }
