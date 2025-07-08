@@ -17,12 +17,18 @@
 #include <limits>
 #include <cmath>
 #include <iostream> // For debug prints
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include "geometry_msgs/msg/point_stamped.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 class ObstacleDetector : public rclcpp::Node
 {
 public:
     explicit ObstacleDetector(const rclcpp::NodeOptions &options = rclcpp::NodeOptions())
-        : Node("obstacle_detector", options)
+        : Node("obstacle_detector", options),
+          tf_buffer_(std::make_shared<tf2_ros::Buffer>(this->get_clock())),
+          tf_listener_(*tf_buffer_)
     {
         initializeParameters();
 
@@ -50,15 +56,16 @@ public:
 private:
     void initialize_map()
     {
-        int width = 2000; // 150 cells in width
-        int height = 2000; // 150 cells in height
+        int width = 6000; // 150 cells in width
+        int height = 6000; // 150 cells in height
         float resolution = 0.25; // 0.5 m per cell
 
         map_.info.resolution = resolution; // 1 m per cell
         map_.info.width = width;
         map_.info.height = height;
-        map_.info.origin.position.x = -width/2 * resolution;
-        map_.info.origin.position.y = -height/2 * resolution;
+        // map_.info.origin.position.x = -width / 2 * resolution;
+        map_.info.origin.position.x = 0;
+        map_.info.origin.position.y = 0;
         map_.info.origin.position.z = 0.0;
         map_.info.origin.orientation.w = 1.0;
 
@@ -67,6 +74,36 @@ private:
     }
     void add_obstacles_and_publish_map()
     {
+        // Transform clusters to map frame if needed
+        std::vector<pcl::PointCloud<pcl::PointXYZI>> transformed_clusters;
+        for (const auto &cluster : last_clusters_)
+        {
+            pcl::PointCloud<pcl::PointXYZI> transformed_cluster;
+            for (const auto &point : cluster)
+            {
+                pcl::PointXYZI pt = point;
+                // Transform point from cluster frame to map frame using tf2
+                geometry_msgs::msg::PointStamped pt_in, pt_out; // Ensure PointStamped is recognized
+                pt_in.header.frame_id = frame_id_;
+                pt_in.header.stamp = rclcpp::Time(0);
+                pt_in.point.x = pt.x;
+                pt_in.point.y = pt.y;
+                pt_in.point.z = pt.z;
+
+                try {
+                    pt_out = tf_buffer_->transform(pt_in, "map", tf2::durationFromSec(0.05));
+                    pt.x = pt_out.point.x;
+                    pt.y = pt_out.point.y;
+                    pt.z = pt_out.point.z;
+                } catch (const tf2::TransformException &ex) {
+                    RCLCPP_WARN(this->get_logger(), "TF transform failed: %s", ex.what());
+                    // If transform fails, keep original point
+                }
+                transformed_cluster.push_back(pt);
+            }
+            transformed_clusters.push_back(transformed_cluster);
+        }
+
         static int call_count = 0;
         call_count++;
 
@@ -75,7 +112,7 @@ private:
             std::fill(map_.data.begin(), map_.data.end(), 0);
         }
 
-        for (const auto &cluster : last_clusters_)
+        for (const auto &cluster : transformed_clusters)
         {
             for (const auto &point : cluster)
             {
@@ -103,7 +140,7 @@ private:
         }
 
         map_.header.stamp = this->now();
-        map_.header.frame_id = "ZOE3/os_sensor";
+        map_.header.frame_id = "map";
         publisher_->publish(map_);
     }
 
@@ -374,21 +411,21 @@ private:
 
             for (int idx : indices.indices)
             {
-            const auto &pt = obstacles->points[idx];
-            pcl::PointXYZRGB rgb;
-            rgb.x = pt.x;
-            rgb.y = pt.y;
-            rgb.z = pt.z;
-            rgb.r = r;
-            rgb.g = g;
-            rgb.b = b;
-            clusters_rgb.points.push_back(rgb);
-            min_pt[0] = std::min(min_pt[0], pt.x);
-            min_pt[1] = std::min(min_pt[1], pt.y);
-            min_pt[2] = std::min(min_pt[2], pt.z);
-            max_pt[0] = std::max(max_pt[0], pt.x);
-            max_pt[1] = std::max(max_pt[1], pt.y);
-            max_pt[2] = std::max(max_pt[2], pt.z);
+                const auto &pt = obstacles->points[idx];
+                pcl::PointXYZRGB rgb;
+                rgb.x = pt.x;
+                rgb.y = pt.y;
+                rgb.z = pt.z;
+                rgb.r = r;
+                rgb.g = g;
+                rgb.b = b;
+                clusters_rgb.points.push_back(rgb);
+                min_pt[0] = std::min(min_pt[0], pt.x);
+                min_pt[1] = std::min(min_pt[1], pt.y);
+                min_pt[2] = std::min(min_pt[2], pt.z);
+                max_pt[0] = std::max(max_pt[0], pt.x);
+                max_pt[1] = std::max(max_pt[1], pt.y);
+                max_pt[2] = std::max(max_pt[2], pt.z);
             }
 
             // Publish marker for the cluster
@@ -428,7 +465,7 @@ private:
             pcl::PointCloud<pcl::PointXYZI> cluster_cloud;
             for (int idx : indices.indices)
             {
-            cluster_cloud.points.push_back(obstacles->points[idx]);
+                cluster_cloud.points.push_back(obstacles->points[idx]);
             }
             cluster_cloud.width = cluster_cloud.points.size();
             cluster_cloud.height = 1;
@@ -504,6 +541,8 @@ private:
     int clear_map_interval_; 
 
     std::vector<pcl::PointCloud<pcl::PointXYZI>> last_clusters_; // Store the last clusters
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    tf2_ros::TransformListener tf_listener_;
 };
 
 int main(int argc, char **argv)

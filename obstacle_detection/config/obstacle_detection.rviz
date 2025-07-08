@@ -62,8 +62,6 @@ Visualization Manager:
           Value: true
         ZOE3/blkfr:
           Value: true
-        ZOE3/blkrl:
-          Value: true
         ZOE3/blkrr:
           Value: true
         ZOE3/camera_front:
@@ -86,10 +84,6 @@ Visualization Manager:
           Value: true
         ZOE3/sensor_ref:
           Value: true
-        ZOE3/steering_front:
-          Value: true
-        ZOE3/steering_rear:
-          Value: true
         ZOE3/ublox_frame:
           Value: true
         ZOE3/wfl:
@@ -100,8 +94,6 @@ Visualization Manager:
           Value: true
         ZOE3/wrr:
           Value: true
-        custom_map:
-          Value: true
         map:
           Value: true
       Marker Scale: 5
@@ -110,54 +102,45 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        custom_map:
-          map:
-            ZOE3/EKF_RTK_frame:
+        map:
+          ZOE3/EKF_RTK_frame:
+            {}
+          ZOE3/EKF_UBLOX_frame:
+            {}
+          ZOE3/base_link:
+            ZOE3/sensor_ref:
+              ZOE3/blkfl:
+                {}
+              ZOE3/blkfr:
+                {}
+              ZOE3/blkrr:
+                {}
+              ZOE3/camera_rear:
+                {}
+              ZOE3/gps:
+                {}
+              ZOE3/imu:
+                {}
+              ZOE3/laser_ref:
+                {}
+              ZOE3/laser_scan:
+                {}
+              ZOE3/os_sensor:
+                {}
+            ZOE3/wfl:
               {}
-            ZOE3/EKF_UBLOX_frame:
+            ZOE3/wfr:
               {}
-            ZOE3/base_link:
-              ZOE3/sensor_ref:
-                ZOE3/blkfl:
-                  {}
-                ZOE3/blkfr:
-                  {}
-                ZOE3/blkrl:
-                  {}
-                ZOE3/blkrr:
-                  {}
-                ZOE3/camera_front:
-                  {}
-                ZOE3/camera_rear:
-                  {}
-                ZOE3/gps:
-                  {}
-                ZOE3/imu:
-                  {}
-                ZOE3/laser_ref:
-                  {}
-                ZOE3/laser_scan:
-                  {}
-                ZOE3/os_sensor:
-                  {}
-              ZOE3/steering_front:
-                {}
-              ZOE3/steering_rear:
-                {}
-              ZOE3/wfl:
-                {}
-              ZOE3/wfr:
-                {}
-              ZOE3/wrl:
-                {}
-              ZOE3/wrr:
-                {}
-            ZOE3/map_meas:
+            ZOE3/wrl:
               {}
-            ZOE3/rtk_frame:
+            ZOE3/wrr:
               {}
-            ZOE3/ublox_frame:
-              {}
+          ZOE3/map_meas:
+            {}
+          ZOE3/rtk_frame:
+            {}
+          ZOE3/ublox_frame:
+            {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -439,7 +422,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
-    Fixed Frame: ZOE3/os_sensor
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -482,25 +465,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 11.032143592834473
+      Distance: 90.88524627685547
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 5.090328216552734
-        Y: 1.257310152053833
-        Z: 10.147724151611328
+        X: -8.142483711242676
+        Y: -7.898334503173828
+        Z: 11.579438209533691
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7197965979576111
+      Pitch: 1.4397963285446167
       Target Frame: ZOE3/os_sensor
       Value: Orbit (rviz_default_plugins)
-      Yaw: 3.0753936767578125
+      Yaw: 0.46039167046546936
     Saved: ~
 Window Geometry:
   Displays:
@@ -518,5 +501,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1487
-  X: 364
-  Y: -15
+  X: 120
+  Y: 222

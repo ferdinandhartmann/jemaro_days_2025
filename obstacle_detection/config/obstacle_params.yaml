@@ -15,4 +15,4 @@ obstacle_detector:
     max_cluster_size_meters: 1.6
     max_cluster_z_height: -0.5 # Maximum z coordinate height of the cluster in meters
     inflation_radius: 2.5 # How much to "inflate" each point in map cells (e.g. 1 = 3x3 square, 2 = 5x5 square)
-    clear_map_interval: 1 # How often to clear the map (after how many calls to the callback)
+    clear_map_interval: 100000 # How often to clear the map (after how many calls to the callback)

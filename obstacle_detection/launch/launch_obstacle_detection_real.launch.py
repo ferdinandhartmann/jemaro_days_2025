@@ -37,17 +37,6 @@ def generate_launch_description():
         parameters=[params_file]
     )
 
-    obstacle_detection_node = Node(
-        package='obstacle_detection',
-        executable='create_map',
-        name='create_map_node',
-        output='screen',
-        parameters=[{'use_sim_time': True}],
-        remappings=[
-            ('/odom', '/odom_fhj')
-        ]
-    )
-
     static_tf_publisher = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
@@ -60,6 +49,5 @@ def generate_launch_description():
         # rviz2,
         downsampling_launch,
         obstacle_node,
-        # obstacle_detection_node
-        static_tf_publisher,
+        # static_tf_publisher,
     ])

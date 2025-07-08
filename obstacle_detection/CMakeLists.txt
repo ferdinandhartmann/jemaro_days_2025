@@ -15,10 +15,10 @@ find_package(pcl_conversions REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io filters segmentation search)
 find_package(nav_msgs REQUIRED)
-# find_package(geometry_msgs REQUIRED)
-# find_package(tf2 REQUIRED)
-# find_package(tf2_ros REQUIRED)
-# find_package(tf2_geometry_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -42,10 +42,10 @@ ament_target_dependencies(obstacle_detection_node
   pcl_ros
   PCL
   nav_msgs
-#   geometry_msgs
-#   tf2
-#   tf2_ros
-#   tf2_geometry_msgs
+  geometry_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 
