@@ -51,7 +51,7 @@ void PointcloudDownsampling::voxelFiltering(const sensor_msgs::msg::PointCloud2:
   // Remove the top 50% of the points (based on z-coordinate)
   pcl::PointCloud<pcl::PointXYZI> pcl_cloud_z;
   for (const auto& point : pcl_cloud_angle) {
-    if (point.z <= -1.0) { // Assuming 0.0 is the midpoint for z-coordinate
+    if (point.z <= -1.18) { // Assuming 0.0 is the midpoint for z-coordinate
       pcl_cloud_z.push_back(point);
     }
   }
@@ -73,7 +73,6 @@ void PointcloudDownsampling::voxelFiltering(const sensor_msgs::msg::PointCloud2:
   ros2_cloud_filtered_cutoff.header.frame_id = PUB_CLOUD_FRAME;
   ros2_cloud_filtered_cutoff.header.stamp = get_clock()->now();
   ros2_cloud_filtered_cutoff.is_dense = true;
-
 //   pointcloud_pub_cutoff_->publish(std::move(ros2_cloud_filtered_cutoff));
 
   sensor_msgs::msg::PointCloud2 ros2_cloud_cutoff;

@@ -5,12 +5,14 @@ obstacle_detector:
     clusters_topic: "/obstacle_clusters"
     max_cluster_publish: 5
     frame_id: "ZOE3/os_sensor"
-    ransac_distance_threshold: 0.175 # how far a point can be from the plane to be cosidered part of the plane
-    cluster_tolerance: 0.5 # Cluster tolerance in meters (maximum distance between points in a cluster)
+    ransac_distance_threshold: 0.1 # how far a point can be from the plane to be cosidered part of the plane
+    cluster_tolerance: 0.30 # Cluster tolerance in meters (maximum distance between points in a cluster)
     min_cluster_size: 2
-    max_cluster_size: 50 # Maximum size of point group to consider as a cluster
-    max_cluster_size_select: 50 # Maximum size of cluster to select after intensty ranking 
+    max_cluster_size: 90 # Maximum size of point group to consider as a cluster
+    max_cluster_size_select: 90 # Maximum size of cluster to select after intensty ranking 
     max_cluster_publish: 100000
-    intensity_threshold: 700.0 # Intensity threshold for filtering points
-    max_cluster_size_meters: 1.0
-    max_cluster_z_height: -1.0 # Maximum z coordinate height of the cluster in meters
+    intensity_threshold: 300.0 # Intensity threshold for filtering points
+    max_cluster_size_meters: 1.6
+    max_cluster_z_height: -0.5 # Maximum z coordinate height of the cluster in meters
+    inflation_radius: 2.5 # How much to "inflate" each point in map cells (e.g. 1 = 3x3 square, 2 = 5x5 square)
+    clear_map_interval: 100000 # How often to clear the map (after how many calls to the callback)

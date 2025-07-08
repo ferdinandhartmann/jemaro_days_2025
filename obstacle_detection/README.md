@@ -18,7 +18,7 @@ ros2 launch obstacle_detection launch_obstacle_detection_real.launch.py
 ### Replay Recorded Data
 To replay a recorded ROS 2 bag file:
 ```bash
-ros2 bag play -l --start-offset 8 src/data/rosbag2_2025_06_26-10_27_18/
+ros2 bag play -l --start-offset 8 --rate 0.6 src/data/rosbag2_2025_06_26-10_27_18/
 ```
 
 ## Notes
