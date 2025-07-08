@@ -66,6 +66,16 @@ Launch the pointcloud downsampling node (based on https://github.com/LihanChen20
 ros2 launch pointcloud_downsampling pointcloud_downsampling.launch.py
 ```
 
+# Obstacle Detection
+
+Run the full obstacle detection pipeline with RViz:
+```
+ros2 launch obstacle_detection launch_real.launch.py
+```
+This node limits the LiDAR field of view to the front 60 degrees, segments the
+ground plane using RANSAC, clusters the remaining points and publishes bounding
+boxes for up to five obstacles.
+
 
 
 

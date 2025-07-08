@@ -32,7 +32,7 @@ def generate_launch_description():
             'pointcloud_downsampling.launch.py'
         ))
     )
-
+    
     return LaunchDescription([
         rviz2,
         downsampling_launch
