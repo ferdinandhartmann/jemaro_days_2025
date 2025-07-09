@@ -6,8 +6,9 @@ from geometry_msgs.msg import Pose
 class StaticMapPublisher(Node):
     def __init__(self):
         super().__init__('static_map_publisher')
-        self.publisher_ = self.create_publisher(OccupancyGrid, '/test_map', 10)
-        self.declare_parameter('publish_once', True)
+        qos = rclpy.qos.QoSProfile(depth=10, reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT)
+        self.publisher_ = self.create_publisher(OccupancyGrid, '/test_map', qos)
+        self.declare_parameter('publish_once', False)
 
         self.map_msg = self.initialize_map()
         self.timer = self.create_timer(1.0, self.publish_map)
