@@ -9,7 +9,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
 
     pkg_path = get_package_share_directory('obstacle_detection')
-    rviz_config_path = os.path.join(pkg_path, 'config', 'obstacle_detection.rviz')
+    rviz_config_path = os.path.join(pkg_path, 'config', 'realcar.rviz')
     params_file = os.path.join(pkg_path, 'config', 'obstacle_params.yaml')
 
     rviz2 = Node(

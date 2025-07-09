@@ -14,7 +14,8 @@ import rclpy.qos
 class DubinsPathPublisher(Node):
     def __init__(self):
         super().__init__('dubins_path_publisher')
-        self.publisher_ = self.create_publisher(Path, '/jemaro_path', 10)
+        # self.publisher_ = self.create_publisher(Path, '/jemaro_path', 10) 
+        self.publisher_ = self.create_publisher(Path, '/ZOE3/path_follower/setPath', 10) 
         self.marker_publisher_ = self.create_publisher(MarkerArray, '/start_goal_markers', 10)
         self.map_sub = self.create_subscription(
             OccupancyGrid,
@@ -27,30 +28,30 @@ class DubinsPathPublisher(Node):
         )
         self.point_marker_pub = self.create_publisher(MarkerArray, '/path_points', 10)
 
+        self.marker_timer = self.create_timer(1.0, self.publish_markers)
+        self.path_timer = self.create_timer(1.0, self.compute_and_publish_path)
 
         self.map_data = None
         self.turning_radius = 2.0
 
         # Start and goal positions (x, y, yaw in radians)
-        self.start = (1050.0, 750.0, math.pi / 2)
-        self.goal = (1000.0, 730.0, math.pi / 2)
+        self.start = (1097.2, 776.28, math.pi / 2)
+        self.goal = (1012.74, 739.0, math.pi / 2)
 
-        # Timer to publish markers periodically
-        self.marker_timer = self.create_timer(1.0, self.publish_markers)
 
     def map_callback(self, msg):
         self.map_data = msg
         self.get_logger().info("Received new map. Computing path...")
 
-        self.compute_and_publish_path()
+        # self.compute_and_publish_path()
 
 
     def adjust_path_for_obstacles(
         self,
         points,
-        shift_distance: float = 5.0,
+        shift_distance: float = 2.7,
         window_size_meters: float = 0.5,
-        safety_distance: float = 1.5,
+        safety_distance: float = 1.0,
         shift_direction: int = 1
     ):
         """

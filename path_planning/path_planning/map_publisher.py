@@ -8,7 +8,7 @@ class StaticMapPublisher(Node):
     def __init__(self):
         super().__init__('static_map_publisher')
         qos = rclpy.qos.QoSProfile(depth=10, reliability=rclpy.qos.ReliabilityPolicy.RELIABLE)
-        self.publisher_ = self.create_publisher(OccupancyGrid, '/test_map', qos)
+        self.publisher_ = self.create_publisher(OccupancyGrid, '/jemaro_map', qos)
 
         self.map_msg = self.initialize_map()
         self.timer = self.create_timer(0.7, self.publish_map)
