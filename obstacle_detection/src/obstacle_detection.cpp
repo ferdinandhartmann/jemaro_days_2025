@@ -268,7 +268,7 @@ private:
     // After publishClustersAndMarkers (i.e. when clusters_out ready):
     void updateTracks(const std::vector<pcl::PointCloud<pcl::PointXYZI>> &clusters)
     {
-        RCLCPP_INFO(this->get_logger(), "updateTracks: Starting with %zu clusters and %zu existing tracks", clusters.size(), tracks_.size());
+        // RCLCPP_INFO(this->get_logger(), "updateTracks: Starting with %zu clusters and %zu existing tracks", clusters.size(), tracks_.size());
 
         std::vector<Eigen::Vector2f> cents;
         for (auto &cl : clusters)
@@ -276,7 +276,7 @@ private:
             cents.push_back(computeCentroid(cl));
         }
 
-        RCLCPP_INFO(this->get_logger(), "updateTracks: Computed %zu centroids", cents.size());
+        // RCLCPP_INFO(this->get_logger(), "updateTracks: Computed %zu centroids", cents.size());
 
         // Flag arrays
         std::vector<bool> used_new(cents.size(), false);

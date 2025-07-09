@@ -45,9 +45,17 @@ def generate_launch_description():
         output='screen'
     )
 
+    path_planning_node = Node(
+        package='path_planning',
+        executable='path_planning',
+        name='path_planning_node',
+        output='screen',
+    )
+
     return LaunchDescription([
         # rviz2,
         downsampling_launch,
         obstacle_node,
         # static_tf_publisher,
+        path_planning_node
     ])

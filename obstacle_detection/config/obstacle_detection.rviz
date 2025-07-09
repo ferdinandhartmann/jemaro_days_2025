@@ -276,7 +276,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 1651
@@ -297,7 +297,7 @@ Visualization Manager:
         Value: /ZOE3/os_node/points_downsampled_cutoff
       Use Fixed Frame: true
       Use rainbow: false
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -521,9 +521,9 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -6.940210819244385
-        Y: -4.7962846755981445
-        Z: 6.4337687492370605
+        X: -8.507152557373047
+        Y: -10.228739738464355
+        Z: 11.678359031677246
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
