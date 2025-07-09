@@ -2,17 +2,19 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import Pose
+import math
 
 class StaticMapPublisher(Node):
     def __init__(self):
         super().__init__('static_map_publisher')
-        # qos = rclpy.qos.QoSProfile(depth=10, reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT)
         qos = rclpy.qos.QoSProfile(depth=10, reliability=rclpy.qos.ReliabilityPolicy.RELIABLE)
         self.publisher_ = self.create_publisher(OccupancyGrid, '/test_map', qos)
-        self.declare_parameter('publish_once', False)
 
         self.map_msg = self.initialize_map()
-        self.timer = self.create_timer(1.0, self.publish_map)
+        self.timer = self.create_timer(0.7, self.publish_map)
+
+        self.square_active = False  # Track if the square is active
+        self.publish_count = 0  # Count the number of times the map is published
 
     def initialize_map(self):
         width = 6000
@@ -34,16 +36,61 @@ class StaticMapPublisher(Node):
 
         # Initialize all cells to free (0)
         map_msg.data = [0] * (width * height)
+
         return map_msg
+
+    def toggle_square(self):
+        width = self.map_msg.info.width
+        height = self.map_msg.info.height
+
+        # Define square parameters
+        square_size_x = 150  # 150 cells in x direction
+        square_size_y = 300  # 300 cells in y direction
+        x_distance = 50  # Distance along the line between start and goal
+
+        # Start and goal positions in map frame meters
+        start = (1000.0, 730.0)
+        goal = (1050.0, 750.0)
+
+        # Convert start and goal positions to grid cells
+        resolution = self.map_msg.info.resolution
+        start_cell = (int(start[0] / resolution), int(start[1] / resolution))
+        goal_cell = (int(goal[0] / resolution), int(goal[1] / resolution))
+
+        # Calculate the direction vector and normalize it
+        direction_x = goal_cell[0] - start_cell[0]
+        direction_y = goal_cell[1] - start_cell[1]
+        length = math.sqrt(direction_x**2 + direction_y**2)
+        direction_x /= length
+        direction_y /= length
+
+        # Calculate the square's starting position along the line
+        square_start_x = int(start_cell[0] + direction_x * x_distance)
+        square_start_y = int(start_cell[1] + direction_y * x_distance)
+
+        for y in range(square_start_y, square_start_y + square_size_y):
+            for x in range(square_start_x, square_start_x + square_size_x):
+                if 0 <= x < width and 0 <= y < height:  # Ensure within bounds
+                    index = y * width + x
+                    if self.square_active:
+                        self.map_msg.data[index] = 0  # Remove square (set to free)
+                    else:
+                        self.map_msg.data[index] = 100  # Add square (set to occupied)
+
+        self.square_active = not self.square_active  # Toggle square state
+
 
     def publish_map(self):
         self.map_msg.header.stamp = self.get_clock().now().to_msg()
+
+        # Toggle square every two publishes
+        if self.publish_count % 2 == 0:
+            self.toggle_square()
+
         self.publisher_.publish(self.map_msg)
         self.get_logger().info('Published static map.')
 
-        # Optionally stop publishing after first time
-        if self.get_parameter('publish_once').get_parameter_value().bool_value:
-            self.timer.cancel()
+        self.publish_count += 1
 
 def main(args=None):
     rclpy.init(args=args)
