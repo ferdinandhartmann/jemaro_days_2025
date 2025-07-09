@@ -18,7 +18,7 @@ class DubinsPathPublisher(Node):
         self.marker_publisher_ = self.create_publisher(MarkerArray, '/start_goal_markers', 10)
         self.map_sub = self.create_subscription(
             OccupancyGrid,
-            '/test_map',
+            '/jemaro_map',
             self.map_callback,
             qos_profile=rclpy.qos.QoSProfile(
                 depth=10,
@@ -32,8 +32,8 @@ class DubinsPathPublisher(Node):
         self.turning_radius = 2.0
 
         # Start and goal positions (x, y, yaw in radians)
-        self.start = (1000.0, 730.0, math.pi / 2)
-        self.goal = (1050.0, 750.0, math.pi / 2)
+        self.start = (1050.0, 750.0, math.pi / 2)
+        self.goal = (1000.0, 730.0, math.pi / 2)
 
         # Timer to publish markers periodically
         self.marker_timer = self.create_timer(1.0, self.publish_markers)
@@ -51,7 +51,7 @@ class DubinsPathPublisher(Node):
         shift_distance: float = 5.0,
         window_size_meters: float = 0.5,
         safety_distance: float = 1.5,
-        shift_direction: int = -1
+        shift_direction: int = 1
     ):
         """
         Slide any window of points that collide with obstacles laterally by shift_distance
@@ -223,8 +223,6 @@ class DubinsPathPublisher(Node):
         smoothed = self.smooth_path(bridged)
 
         self.publish_path(smoothed)
-
-        self.publish_path(adjusted)
 
     
     def publish_path(self, configurations):
