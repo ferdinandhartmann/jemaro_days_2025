@@ -7,7 +7,9 @@ import numpy as np
 import transforms3d
 from visualization_msgs.msg import Marker, MarkerArray
 
-from path_planning import dubins  # custom Dubins planner
+from visualization_msgs.msg import Marker, MarkerArray
+from std_msgs.msg import ColorRGBA
+import rclpy.qos
 
 class DubinsPathPublisher(Node):
     def __init__(self):
@@ -16,13 +18,15 @@ class DubinsPathPublisher(Node):
         self.marker_publisher_ = self.create_publisher(MarkerArray, '/start_goal_markers', 10)
         self.map_sub = self.create_subscription(
             OccupancyGrid,
-            '/jemaro_map',
+            '/test_map',
             self.map_callback,
             qos_profile=rclpy.qos.QoSProfile(
                 depth=10,
-                reliability=rclpy.qos.QoSReliabilityPolicy.BEST_EFFORT
+                reliability=rclpy.qos.QoSReliabilityPolicy.RELIABLE,
             )
         )
+        self.point_marker_pub = self.create_publisher(MarkerArray, '/path_points', 10)
+
 
         self.map_data = None
         self.turning_radius = 2.0
@@ -40,30 +44,195 @@ class DubinsPathPublisher(Node):
 
         self.compute_and_publish_path()
 
-    def is_collision_free(self, path_points):
-        if self.map_data is None:
-            self.get_logger().warn("Map not received yet.")
-            return True
 
+    def adjust_path_for_obstacles(
+        self,
+        points,
+        shift_distance: float = 5.0,
+        window_size_meters: float = 1.5,
+        safety_distance: float = 1.5,
+        shift_direction: int = -1
+    ):
+        """
+        Slide any window of points that collide with obstacles laterally by shift_distance
+        (to the left if shift_direction=+1, to the right if -1), checking a safety buffer
+        around each shifted point. Skips ahead past the window after shifting.
+        """
+        if self.map_data is None:
+            return points
+
+        # Map metadata
         width = self.map_data.info.width
         height = self.map_data.info.height
         resolution = self.map_data.info.resolution
         origin = self.map_data.info.origin.position
-        data = np.array(self.map_data.data).reshape((height, width))
+        grid = np.array(self.map_data.data).reshape((height, width))
 
-        for x, y, _ in path_points:
+        # Precompute path direction
+        dx = self.goal[0] - self.start[0]
+        dy = self.goal[1] - self.start[1]
+        path_angle = math.atan2(dy, dx)
+
+        # Convert meters to cells
+        safety_cells = int(safety_distance / resolution)
+        window_size = int(window_size_meters / resolution)
+
+        adjusted = []
+        i = 0
+        max_attempts = 10
+
+        while i < len(points):
+            x, y, yaw = points[i]
             mx = int((x - origin.x) / resolution)
             my = int((y - origin.y) / resolution)
-            if 0 <= mx < width and 0 <= my < height:
-                if data[my, mx] > 50:
-                    return False
-        return True
 
-    def shift_goal_left(self, goal, distance=1.0):
-        x, y, yaw = goal
-        left_x = x - distance * math.sin(yaw)
-        left_y = y + distance * math.cos(yaw)
-        return (left_x, left_y, yaw)
+            # Out‐of‐bounds → keep as is
+            if not (0 <= mx < width and 0 <= my < height):
+                adjusted.append([x, y, yaw])
+                i += 1
+                continue
+
+            # Check collision + safety buffer
+            is_obstacle = False
+            for ox in range(-safety_cells, safety_cells + 1):
+                for oy in range(-safety_cells, safety_cells + 1):
+                    cx = mx + ox
+                    cy = my + oy
+                    if 0 <= cx < width and 0 <= cy < height and grid[cy, cx] > 80:
+                        is_obstacle = True
+                        break
+                if is_obstacle:
+                    break
+
+            if is_obstacle:
+                self.get_logger().warn(f"Obstacle at point {i}, shifting window ±{window_size} cells")
+
+                # Define the block of points to shift
+                start_idx = max(0, i - window_size)
+                end_idx = min(len(points), i + window_size + 1)
+
+                # Shift each point in that block laterally
+                for j in range(start_idx, end_idx):
+                    px, py, pyaw = points[j]
+                    shifted = False
+
+                    for attempt in range(max_attempts):
+                        # lateral shift
+                        sx = px - shift_direction * shift_distance * math.sin(path_angle)
+                        sy = py + shift_direction * shift_distance * math.cos(path_angle)
+
+                        mxs = int((sx - origin.x) / resolution)
+                        mys = int((sy - origin.y) / resolution)
+
+                        # safety check around shifted cell
+                        safe = True
+                        for sox in range(-safety_cells, safety_cells + 1):
+                            for soy in range(-safety_cells, safety_cells + 1):
+                                cxx = mxs + sox
+                                cyy = mys + soy
+                                if 0 <= cxx < width and 0 <= cyy < height and grid[cyy, cxx] > 80:
+                                    safe = False
+                                    break
+                            if not safe:
+                                break
+
+                        if safe:
+                            adjusted.append([sx, sy, pyaw])
+                            shifted = True
+                            break
+                        else:
+                            # Try shifting further on next iteration
+                            px, py = sx, sy
+
+                    if not shifted:
+                        self.get_logger().error(f"Could not safely shift point {j} after {max_attempts} tries")
+                        adjusted.append([px, py, pyaw])
+
+                # Skip past the window
+                i = end_idx
+
+            else:
+                # No obstacle here → keep original
+                adjusted.append([x, y, yaw])
+                i += 1
+
+        return adjusted
+
+
+    def smooth_path(self, points, kernel_size=5):
+        import scipy.ndimage
+
+        if len(points) < kernel_size:
+            return points
+
+        points_np = np.array(points)
+        smoothed = np.copy(points_np)
+
+        for i in range(3):  # x, y, yaw
+            smoothed[:, i] = scipy.ndimage.uniform_filter1d(points_np[:, i], size=kernel_size, mode='nearest')
+
+        return smoothed.tolist()
+
+    def fill_gaps(self, pts, max_dist=1.0):
+        """
+        Given a list of [x,y,yaw], insert extra points between any two
+        whose Euclidean gap > max_dist.
+        """
+        filled = []
+        for (x0,y0,yaw0), (x1,y1,yaw1) in zip(pts, pts[1:]):
+            filled.append([x0,y0,yaw0])
+            dx = x1 - x0
+            dy = y1 - y0
+            dist = math.hypot(dx,dy)
+            if dist > max_dist:
+                n = int(math.ceil(dist / max_dist))
+                for k in range(1, n):
+                    t = k / n
+                    filled.append([
+                        x0 + t*dx,
+                        y0 + t*dy,
+                        yaw0 + t*((yaw1-yaw0+math.pi)%(2*math.pi)-math.pi)  # shortest‐angle interp
+                    ])
+        # append last
+        filled.append(pts[-1])
+        return filled
+
+
+
+    def compute_and_publish_path(self):
+        num_points = 100
+        x0, y0, yaw0 = self.start
+        x1, y1, yaw1 = self.goal
+
+        points = []
+        for i in range(num_points + 1):
+            t = i / num_points
+            x = x0 + t * (x1 - x0)
+            y = y0 + t * (y1 - y0)
+            yaw = yaw0 + t * (yaw1 - yaw0)
+            points.append([x, y, yaw])
+
+        # Adjust points if collision is detected
+        adjusted = self.adjust_path_for_obstacles(points)
+
+        # bridge gaps:
+        resolution = self.map_data.info.resolution
+        step = resolution * 1.5
+        bridged = self.fill_gaps(adjusted, max_dist=step)
+
+        # now publish `bridged` instead of `adjusted`
+
+        smoothed = self.smooth_path(bridged)
+
+        # self.publish_path(smoothed)
+
+        self.publish_path(adjusted)
+
+        
+
+
+
+
 
     def publish_path(self, configurations):
         path_msg = Path()
@@ -87,7 +256,37 @@ class DubinsPathPublisher(Node):
             path_msg.poses.append(pose)
 
         self.publisher_.publish(path_msg)
+
+        self.publish_point_markers(configurations)
+
         self.get_logger().info(f"Published Dubins path with {len(path_msg.poses)} poses.")
+
+    def publish_point_markers(self, pts):
+        ma = MarkerArray()
+
+        # Clear existing markers by publishing an empty array
+        clear_ma = MarkerArray()
+        self.point_marker_pub.publish(clear_ma)
+
+        for i, (x, y, yaw) in enumerate(pts):
+            m = Marker()
+            m.header.frame_id = 'map'
+            m.header.stamp = self.get_clock().now().to_msg()
+            m.ns = 'path_points'
+            m.id = i
+            m.type = Marker.SPHERE
+            m.action = Marker.ADD
+            m.pose.position.x = x
+            m.pose.position.y = y
+            m.pose.position.z = 0.1
+            m.scale.x = 0.2
+            m.scale.y = 0.2
+            m.scale.z = 0.2
+            m.color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.8)
+            ma.markers.append(m)
+
+        self.point_marker_pub.publish(ma)
+
 
     def publish_markers(self):
         marker_array = MarkerArray()
@@ -132,71 +331,6 @@ class DubinsPathPublisher(Node):
         marker_array.markers.append(goal_marker)
 
         self.marker_publisher_.publish(marker_array)
-        self.get_logger().info("Published start and goal markers.")
-
-    def compute_and_publish_path(self):
-        start_pt = dubins.Waypoint(self.start[0], self.start[1], math.degrees(self.start[2]))
-        goal_pt = dubins.Waypoint(self.goal[0], self.goal[1], math.degrees(self.goal[2]))
-
-        try:
-            param = dubins.calcDubinsPath(start_pt, goal_pt, vel=5.0, phi_lim=30)
-            traj = dubins.dubins_traj(param, step=0.5)
-
-            if not traj or len(traj) == 0:
-                self.get_logger().error("Dubins trajectory is empty. Aborting path generation.")
-                return
-
-            self.get_logger().info(f"Generated trajectory with {len(traj)} points.")
-
-            configurations = []
-            for i, p in enumerate(traj):
-                if i >= len(traj):
-                    self.get_logger().error(f"Index {i} is out of bounds for trajectory of size {len(traj)}.")
-                    break
-                if len(p) < 3:
-                    self.get_logger().error(f"Trajectory point {i} is malformed: {p}. Skipping.")
-                    continue
-                configurations.append((p[0], p[1], p[2]))
-
-            if not self.is_collision_free(configurations):
-                self.get_logger().warn("Initial path in collision. Trying left-shifted goal...")
-                shifted_goal = self.shift_goal_left(self.goal, distance=1.0)
-                shifted_goal_pt = dubins.Waypoint(shifted_goal[0], shifted_goal[1], math.degrees(shifted_goal[2]))
-
-                param = dubins.calcDubinsPath(start_pt, shifted_goal_pt, vel=5.0, phi_lim=30)
-                traj = dubins.dubins_traj(param, step=0.5)
-
-                if not traj or len(traj) == 0:
-                    self.get_logger().error("Shifted Dubins trajectory is empty. Aborting path generation.")
-                    return
-
-                self.get_logger().info(f"Generated shifted trajectory with {len(traj)} points.")
-
-                configurations = []
-                for i, p in enumerate(traj):
-                    if i >= len(traj):
-                        self.get_logger().error(f"Index {i} is out of bounds for shifted trajectory of size {len(traj)}.")
-                        break
-                    if len(p) < 3:
-                        self.get_logger().error(f"Shifted trajectory point {i} is malformed: {p}. Skipping.")
-                        continue
-                    configurations.append((p[0], p[1], p[2]))
-
-                if not self.is_collision_free(configurations):
-                    self.get_logger().error("Shifted path also in collision. Aborting.")
-                    return
-                else:
-                    self.goal = shifted_goal
-                    self.get_logger().info("Left-shifted path is collision-free. Using that.")
-
-            self.publish_path(configurations)
-            self.publish_markers()
-
-        except IndexError as e:
-            self.get_logger().error(f"Index error during Dubins path generation: {e}")
-            self.get_logger().debug(f"Trajectory size: {len(traj) if traj else 'N/A'}")
-        except Exception as e:
-            self.get_logger().error(f"Failed to generate Dubins path: {e}")
 
 
 def main(args=None):
@@ -206,94 +340,3 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
-
-### Code which generates a manually calculated straight path
-
-# import rclpy
-# from rclpy.node import Node
-# from nav_msgs.msg import Path
-# from geometry_msgs.msg import PoseStamped
-# import math
-
-# class StraightPathPublisher(Node):
-#     def __init__(self):
-#         super().__init__('straight_path_publisher')
-#         self.publisher_ = self.create_publisher(Path, '/path', 10)
-#         self.timer = self.create_timer(1.0, self.timer_callback)
-
-#         # Exact start and end poses in 'world' coordinate
-#         # self.start = {
-#         #     "x": 1.5388960819545028,
-#         #     "y": -44.17189175794992,
-#         #     "z": 0.05748737734220649,
-#         #     "qx": -4.870341654186212e-07,
-#         #     "qy": 2.208811513094278e-05,
-#         #     "qz": 0.9998483678707415,
-#         #     "qw": 0.017413809982094696
-#         # }
-
-#         # self.goal = {
-#         #     "x": 1.520817118382381,
-#         #     "y": 30.988084603474388,
-#         #     "z": 0.05748761483841908,
-#         #     "qx": -1.3895804518744873e-07,
-#         #     "qy": 2.1788112739575307e-05,
-#         #     "qz": 0.9999998906502604,
-#         #     "qw": 0.00046714529433441895
-#         # }
-
-#         # Exact start and end poses in 'map' coordinate
-#         self.start = {
-#             "x": 1000.0,
-#             "y": 730.0,
-#             "z": 0.0,
-#             "qx": 0.0,
-#             "qy": 0.0,
-#             "qz": 0.0,
-#             "qw": 1.0
-#         }
-
-#         self.goal = {
-#             "x": 1050.0,
-#             "y": 750.0,
-#             "z": 0.0,
-#             "qx": 0.0,
-#             "qy": 0.0,
-#             "qz": 0.0,
-#             "qw": 1.0
-#         }
-
-#     def timer_callback(self):
-#         path_msg = Path()
-#         path_msg.header.frame_id = 'map'
-#         path_msg.header.stamp = self.get_clock().now().to_msg()
-
-#         num_points = 20
-
-#         for i in range(num_points + 1):
-#             t = i / num_points
-#             pose = PoseStamped()
-#             pose.header = path_msg.header
-
-#             # Linear interpolation between start and goal
-#             pose.pose.position.x = self.start["x"] + t * (self.goal["x"] - self.start["x"])
-#             pose.pose.position.y = self.start["y"] + t * (self.goal["y"] - self.start["y"])
-#             pose.pose.position.z = self.start["z"] + t * (self.goal["z"] - self.start["z"])
-
-#             # Simple linear interpolation for quaternion (not normalized — good enough for nearly straight line)
-#             pose.pose.orientation.x = self.start["qx"] + t * (self.goal["qx"] - self.start["qx"])
-#             pose.pose.orientation.y = self.start["qy"] + t * (self.goal["qy"] - self.start["qy"])
-#             pose.pose.orientation.z = self.start["qz"] + t * (self.goal["qz"] - self.start["qz"])
-#             pose.pose.orientation.w = self.start["qw"] + t * (self.goal["qw"] - self.start["qw"])
-
-#             path_msg.poses.append(pose)
-
-#         self.publisher_.publish(path_msg)
-#         self.get_logger().info('Published straight path with {} poses.'.format(len(path_msg.poses)))
-
-# def main(args=None):
-#     rclpy.init(args=args)
-#     node = StraightPathPublisher()
-#     rclpy.spin(node)
-#     node.destroy_node()
-#     rclpy.shutdown()

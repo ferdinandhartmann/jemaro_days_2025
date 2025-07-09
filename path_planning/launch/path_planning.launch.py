@@ -18,5 +18,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         path_planning_node,
-        # map_publisher_node
+        map_publisher_node
     ])
