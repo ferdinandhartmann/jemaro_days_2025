@@ -49,7 +49,7 @@ class DubinsPathPublisher(Node):
         self,
         points,
         shift_distance: float = 5.0,
-        window_size_meters: float = 1.5,
+        window_size_meters: float = 0.5,
         safety_distance: float = 1.5,
         shift_direction: int = -1
     ):
@@ -159,7 +159,7 @@ class DubinsPathPublisher(Node):
         return adjusted
 
 
-    def smooth_path(self, points, kernel_size=5):
+    def smooth_path(self, points, kernel_size=50):
         import scipy.ndimage
 
         if len(points) < kernel_size:
@@ -197,8 +197,6 @@ class DubinsPathPublisher(Node):
         filled.append(pts[-1])
         return filled
 
-
-
     def compute_and_publish_path(self):
         num_points = 100
         x0, y0, yaw0 = self.start
@@ -224,16 +222,11 @@ class DubinsPathPublisher(Node):
 
         smoothed = self.smooth_path(bridged)
 
-        # self.publish_path(smoothed)
+        self.publish_path(smoothed)
 
         self.publish_path(adjusted)
 
-        
-
-
-
-
-
+    
     def publish_path(self, configurations):
         path_msg = Path()
         path_msg.header.frame_id = 'map'

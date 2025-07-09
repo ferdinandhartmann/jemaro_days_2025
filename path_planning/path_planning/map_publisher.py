@@ -44,8 +44,8 @@ class StaticMapPublisher(Node):
         height = self.map_msg.info.height
 
         # Define square parameters
-        square_size_x = 70  # 150 cells in x direction
-        square_size_y = 90  # 300 cells in y direction
+        square_size_x = 15  # 150 cells in x direction
+        square_size_y = 20  # 300 cells in y direction
         x_distance = 40  # Distance along the line between start and goal
 
         # Start and goal positions in map frame meters
