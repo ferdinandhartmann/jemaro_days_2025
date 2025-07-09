@@ -21,6 +21,8 @@
 #include <tf2_ros/transform_listener.h>
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <pcl/surface/convex_hull.h>
+#include <pcl/filters/crop_hull.h>
 
 class ObstacleDetector : public rclcpp::Node
 {
@@ -45,12 +47,14 @@ public:
         marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("obstacle_boxes", 10);
         road_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("road_points", 10);
 
-        map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/jemaro_map", qos);
+        map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/jemaro_map", rclcpp::QoS(10).reliable());
         // publish_timer = create_wall_timer(100ms,    // rate
         //   [&](){callback_time();});
         publish_timer = create_wall_timer(
             std::chrono::milliseconds(100), // Publish every 100ms
             std::bind(&ObstacleDetector::add_obstacles_and_publish_map, this));
+
+        hull_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("road_hull", 10);
 
         initialize_map();
         // broadcast_map_frame();
@@ -96,46 +100,46 @@ private:
             std::fill(map_.data.begin(), map_.data.end(), 50);
         }
 
-        // draw road points on the map as free space
-        for (const auto &pt_in : *last_road_points_)
-        {
-            // transform to map frame
-            geometry_msgs::msg::PointStamped pin, pout;
-            pin.header.frame_id = frame_id_;
-            pin.header.stamp = rclcpp::Time(0);
-            pin.point.x = pt_in.x;
-            pin.point.y = pt_in.y;
-            pin.point.z = pt_in.z;
+        // // draw road points on the map as free space
+        // for (const auto &pt_in : *last_road_points_)
+        // {
+        //     // transform to map frame
+        //     geometry_msgs::msg::PointStamped pin, pout;
+        //     pin.header.frame_id = frame_id_;
+        //     pin.header.stamp = rclcpp::Time(0);
+        //     pin.point.x = pt_in.x;
+        //     pin.point.y = pt_in.y;
+        //     pin.point.z = pt_in.z;
 
-            try
-            {
-                pout = tf_buffer_->transform(pin, "map", tf2::durationFromSec(0.05));
-            }
-            catch (const tf2::TransformException &e)
-            {
-                continue; // skip those you can’t transform
-            }
+        //     try
+        //     {
+        //         pout = tf_buffer_->transform(pin, "map", tf2::durationFromSec(0.05));
+        //     }
+        //     catch (const tf2::TransformException &e)
+        //     {
+        //         continue; // skip those you can’t transform
+        //     }
 
-            int mx = static_cast<int>((pout.point.x - map_.info.origin.position.x) / map_.info.resolution);
-            int my = static_cast<int>((pout.point.y - map_.info.origin.position.y) / map_.info.resolution);
+        //     int mx = static_cast<int>((pout.point.x - map_.info.origin.position.x) / map_.info.resolution);
+        //     int my = static_cast<int>((pout.point.y - map_.info.origin.position.y) / map_.info.resolution);
 
-            // Draw a square around the point
-            for (int dx = -inflation_radius_freespace_; dx <= inflation_radius_freespace_; ++dx)
-            {
-                for (int dy = -inflation_radius_freespace_; dy <= inflation_radius_freespace_; ++dy)
-                {
-                    int nx = mx + dx;
-                    int ny = my + dy;
+        //     // Draw a square around the point
+        //     for (int dx = -inflation_radius_freespace_; dx <= inflation_radius_freespace_; ++dx)
+        //     {
+        //         for (int dy = -inflation_radius_freespace_; dy <= inflation_radius_freespace_; ++dy)
+        //         {
+        //             int nx = mx + dx;
+        //             int ny = my + dy;
 
-                    if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
-                        ny >= 0 && ny < static_cast<int>(map_.info.height))
-                    {
-                        int index = ny * map_.info.width + nx;
-                        map_.data[index] = 0; // Free
-                    }
-                }
-            }
-        }
+        //             if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
+        //                 ny >= 0 && ny < static_cast<int>(map_.info.height))
+        //             {
+        //                 int index = ny * map_.info.width + nx;
+        //                 map_.data[index] = 0; // Free
+        //             }
+        //         }
+        //     }
+        // }
 
         // For each track, associate it with the closest cluster in last_clusters_ (if available)
         for (size_t track_idx = 0; track_idx < tracks_.size(); ++track_idx)
@@ -469,7 +473,8 @@ private:
         high_intensity_obstacles_pub_->publish(high_intensity_obstacles_msg);
     }
 
-    std::vector<pcl::PointIndices> performClustering(const pcl::PointCloud<pcl::PointXYZI>::Ptr &obstacles)
+    std::vector<pcl::PointIndices>
+    performClustering(const pcl::PointCloud<pcl::PointXYZI>::Ptr &obstacles)
     {
         pcl::search::KdTree<pcl::PointXYZI>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZI>);
         tree->setInputCloud(obstacles);
@@ -483,62 +488,108 @@ private:
         ec.setInputCloud(obstacles);
         ec.extract(all_cluster_indices);
 
+        // --- Build 2D convex hull of the road ---
+        pcl::PointCloud<pcl::PointXYZI>::Ptr road_hull(new pcl::PointCloud<pcl::PointXYZI>);
+        std::vector<pcl::Vertices> hull_polygons;
+        {
+            pcl::ConvexHull<pcl::PointXYZI> chull;
+            chull.setDimension(2); // Only XY
+            chull.setInputCloud(last_road_points_);
+            chull.reconstruct(*road_hull, hull_polygons);
+        }
+
+        publishRoadHull(road_hull);
+
+        // --- Check each cluster's centroid ---
         std::vector<pcl::PointIndices> cluster_indices;
-
-        float global_min_z = std::numeric_limits<float>::max();
-        float global_max_z = std::numeric_limits<float>::lowest();
-
         for (const auto &indices : all_cluster_indices)
         {
-            float min_pt[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-            float max_pt[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+            float min_pt[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+            float max_pt[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
             float total_intensity = 0.0;
-            float max_intensity = std::numeric_limits<float>::lowest();
+            float max_intensity = -FLT_MAX;
+            float cx = 0, cy = 0;
 
             for (int idx : indices.indices)
             {
-            const auto &pt = obstacles->points[idx];
-            min_pt[0] = std::min(min_pt[0], pt.x);
-            min_pt[1] = std::min(min_pt[1], pt.y);
-            min_pt[2] = std::min(min_pt[2], pt.z);
-            max_pt[0] = std::max(max_pt[0], pt.x);
-            max_pt[1] = std::max(max_pt[1], pt.y);
-            max_pt[2] = std::max(max_pt[2], pt.z);
+                const auto &pt = obstacles->points[idx];
+                min_pt[0] = std::min(min_pt[0], pt.x);
+                min_pt[1] = std::min(min_pt[1], pt.y);
+                min_pt[2] = std::min(min_pt[2], pt.z);
+                max_pt[0] = std::max(max_pt[0], pt.x);
+                max_pt[1] = std::max(max_pt[1], pt.y);
+                max_pt[2] = std::max(max_pt[2], pt.z);
 
-            total_intensity += pt.intensity;
-            max_intensity = std::max(max_intensity, pt.intensity);
+                cx += pt.x;
+                cy += pt.y;
+
+                total_intensity += pt.intensity;
+                max_intensity = std::max(max_intensity, pt.intensity);
             }
 
-            float size_x = max_pt[0] - min_pt[0];
-            float size_y = max_pt[1] - min_pt[1];
-            float size_z = max_pt[2] - min_pt[2];
-            float avg_intensity = total_intensity / indices.indices.size();
+            const float size_x = max_pt[0] - min_pt[0];
+            const float size_y = max_pt[1] - min_pt[1];
+            const float size_z = max_pt[2] - min_pt[2];
+            const float avg_intensity = total_intensity / indices.indices.size();
+            const float centroid_x = cx / indices.indices.size();
+            const float centroid_y = cy / indices.indices.size();
 
-            // Update global min/max z
-            if (min_pt[2] < global_min_z)
-            global_min_z = min_pt[2];
-            if (max_pt[2] > global_max_z)
-            global_max_z = max_pt[2];
-
-            // Check if the cluster meets all conditions
-            if (size_x <= max_cluster_size_x_ &&
-            size_y <= max_cluster_size_y_ &&
-            size_z >= min_cluster_size_z_ &&
-            max_pt[2] <= max_cluster_z_height_ &&
-            indices.indices.size() <= static_cast<size_t>(max_selected_cluster_points_) )
-            // avg_intensity < intensity_avg_threshold_ && // Average intensity below threshold
-            // max_intensity < intensity_max_threshold_)
-           // Maximum intensity below threshold
+            // Basic cluster filtering (your original conditions)
+            if (size_x > max_cluster_size_x_ ||
+                size_y > max_cluster_size_y_ ||
+                size_z < min_cluster_size_z_ ||
+                max_pt[2] > max_cluster_z_height_ ||
+                indices.indices.size() > static_cast<size_t>(max_selected_cluster_points_))
             {
-            cluster_indices.push_back(indices);
+                continue;
+            }
+
+            // Create point for centroid
+            pcl::PointXYZI centroid_pt;
+            centroid_pt.x = centroid_x;
+            centroid_pt.y = centroid_y;
+            centroid_pt.z = 0.0; // Z doesn't matter here
+            // Scale down the road hull by a constant factor
+            pcl::PointCloud<pcl::PointXYZI>::Ptr scaled_hull(new pcl::PointCloud<pcl::PointXYZI>);
+            float scale_factor = 0.8; // Adjust this factor to make the hull smaller
+            Eigen::Vector4f centroid;
+            pcl::compute3DCentroid(*road_hull, centroid);
+
+            for (const auto &pt : road_hull->points)
+            {
+                pcl::PointXYZI scaled_pt;
+                scaled_pt.x = centroid[0] + scale_factor * (pt.x - centroid[0]);
+                scaled_pt.y = centroid[1] + scale_factor * (pt.y - centroid[1]);
+                scaled_pt.z = pt.z; // Keep original Z
+                scaled_hull->points.push_back(scaled_pt);
+            }
+
+            // Check if centroid is inside the scaled road hull
+            pcl::PointCloud<pcl::PointXYZI>::Ptr centroid_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            centroid_cloud->push_back(centroid_pt);
+
+            pcl::CropHull<pcl::PointXYZI> crop;
+            crop.setDim(2);
+            crop.setInputCloud(centroid_cloud);
+            crop.setHullCloud(scaled_hull);
+            crop.setHullIndices(hull_polygons);
+            crop.setCropOutside(true); // Keep points inside hull
+
+            pcl::PointCloud<pcl::PointXYZI> filtered;
+            crop.filter(filtered);
+
+            if (!filtered.empty())
+            {
+                cluster_indices.push_back(indices); // Centroid is inside
             }
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f", global_min_z, global_max_z);
+        RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f");
 
         return cluster_indices;
-        // return all_cluster_indices;
     }
+
+
 
     std::vector<pcl::PointCloud<pcl::PointXYZI>> publishClustersAndMarkers(const std::vector<pcl::PointIndices> &cluster_indices, const pcl::PointCloud<pcl::PointXYZI>::Ptr &obstacles, const std_msgs::msg::Header &header)
     {
@@ -707,15 +758,58 @@ private:
         get_parameter("resolution", resolution_);
     }
 
+    void publishRoadHull(
+        const pcl::PointCloud<pcl::PointXYZI>::Ptr &road_hull)
+    {
+        if (!hull_marker_pub_)
+            return;
+
+        visualization_msgs::msg::Marker marker;
+        marker.header.frame_id = frame_id_;
+        marker.header.stamp = this->now();
+        marker.ns = "road_hull";
+        marker.id = 0;
+        marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+        marker.action = visualization_msgs::msg::Marker::ADD;
+        marker.scale.x = 0.05; // Line width
+
+        marker.color.r = 0.0;
+        marker.color.g = 1.0;
+        marker.color.b = 1.0;
+        marker.color.a = 1.0;
+
+        for (const auto &pt : road_hull->points)
+        {
+            geometry_msgs::msg::Point p;
+            p.x = pt.x;
+            p.y = pt.y;
+            p.z = pt.z; // keep original Z (or use 0)
+            marker.points.push_back(p);
+        }
+
+        // Close the loop
+        if (!road_hull->points.empty())
+        {
+            geometry_msgs::msg::Point first;
+            first.x = road_hull->points[0].x;
+            first.y = road_hull->points[0].y;
+            first.z = road_hull->points[0].z;
+            marker.points.push_back(first);
+        }
+
+        hull_marker_pub_->publish(marker);
+    }
+
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr obstacles_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr clusters_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr high_intensity_obstacles_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr road_pub_;
-
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr map_publisher_;
     rclcpp::TimerBase::SharedPtr publish_timer;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr hull_marker_pub_;
+
 
     nav_msgs::msg::OccupancyGrid map_;
 

@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Marker1
       Splitter Ratio: 0.5706806182861328
     Tree Height: 1087
   - Class: rviz_common/Selection
@@ -278,9 +279,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1377
+      Max Intensity: 1651
       Min Color: 150; 0; 0
-      Min Intensity: 32
+      Min Intensity: 45
       Name: PointCloud2 cutoff
       Position Transformer: XYZ
       Selectable: true
@@ -399,18 +400,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: rviz_default_plugins/MarkerArray
-      Enabled: false
-      Name: MarkerArray
-      Namespaces:
-        {}
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /obstacle_boxes
-      Value: false
     - Alpha: 0.5
       Class: rviz_default_plugins/Map
       Color Scheme: map
@@ -466,6 +455,19 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: Marker
+      Namespaces:
+        road_hull: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /road_hull
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -512,7 +514,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 17.923751831054688
+      Distance: 25.181581497192383
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -527,10 +529,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8897961974143982
+      Pitch: 0.6147963404655457
       Target Frame: ZOE3/os_sensor
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.4353918433189392
+      Yaw: 0.340391606092453
     Saved: ~
 Window Geometry:
   Displays:
@@ -548,5 +550,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1487
-  X: 56
-  Y: 90
+  X: -8
+  Y: 26
