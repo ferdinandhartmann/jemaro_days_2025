@@ -17,7 +17,7 @@ obstacle_detector:
     max_cluster_z_height: -0.5 # Maximum z coordinate height of the cluster in meters
     inflation_radius: 2.5 # How much to "inflate" each point in map cells (e.g. 1 = 3x3 square, 2 = 5x5 square)
     inflation_radius_freespace: 2.5 
-    clear_map_interval: 100000 # How often to clear the map (after how many calls to the callback)
+    clear_map_interval: 1000000 # How often to clear the map (after how many calls to the callback)
 
     max_match_dist: 2.0
     max_missed_frames: 100

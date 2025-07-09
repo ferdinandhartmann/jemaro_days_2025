@@ -49,9 +49,9 @@ class DubinsPathPublisher(Node):
     def adjust_path_for_obstacles(
         self,
         points,
-        shift_distance: float = 2.7,
-        window_size_meters: float = 0.5,
-        safety_distance: float = 1.0,
+        shift_distance: float = 0.1, # distance to shift the points each iteration
+        window_size_meters: float = 0.5, 
+        safety_distance: float = 0.35,
         shift_direction: int = 1
     ):
         """
@@ -80,7 +80,7 @@ class DubinsPathPublisher(Node):
 
         adjusted = []
         i = 0
-        max_attempts = 10
+        max_attempts = 1000
 
         while i < len(points):
             x, y, yaw = points[i]
@@ -142,12 +142,17 @@ class DubinsPathPublisher(Node):
                             shifted = True
                             break
                         else:
+                            # adjusted.append([sx, sy, pyaw])
                             # Try shifting further on next iteration
                             px, py = sx, sy
+    
+                        # Publish the path after each iteration for viz
+                        # self.publish_path(adjusted)
 
                     if not shifted:
                         self.get_logger().error(f"Could not safely shift point {j} after {max_attempts} tries")
                         adjusted.append([px, py, pyaw])
+
 
                 # Skip past the window
                 i = end_idx
