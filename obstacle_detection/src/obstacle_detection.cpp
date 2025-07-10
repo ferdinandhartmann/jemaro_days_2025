@@ -99,46 +99,62 @@ private:
             std::fill(map_.data.begin(), map_.data.end(), 50);
         }
 
-        // // draw road points on the map as free space
-        // for (const auto &pt_in : *last_road_points_)
-        // {
-        //     // transform to map frame
-        //     geometry_msgs::msg::PointStamped pin, pout;
-        //     pin.header.frame_id = frame_id_;
-        //     pin.header.stamp = rclcpp::Time(0);
-        //     pin.point.x = pt_in.x;
-        //     pin.point.y = pt_in.y;
-        //     pin.point.z = pt_in.z;
+        // Save the areas that are black (obstacles) from the map
+        std::vector<int> black_indices;
+        for (size_t i = 0; i < map_.data.size(); ++i)
+        {
+            if (map_.data[i] == 100) // Free space
+            {
+            black_indices.push_back(i);
+            }
+        }
 
-        //     try
-        //     {
-        //         pout = tf_buffer_->transform(pin, "map", tf2::durationFromSec(0.05));
-        //     }
-        //     catch (const tf2::TransformException &e)
-        //     {
-        //         continue; // skip those you can’t transform
-        //     }
+        // Draw road points on the map as free space
+        for (const auto &pt_in : *last_road_points_)
+        {
+            // Transform to map frame
+            geometry_msgs::msg::PointStamped pin, pout;
+            pin.header.frame_id = frame_id_;
+            pin.header.stamp = rclcpp::Time(0);
+            pin.point.x = pt_in.x;
+            pin.point.y = pt_in.y;
+            pin.point.z = pt_in.z;
 
-        //     int mx = static_cast<int>((pout.point.x - map_.info.origin.position.x) / map_.info.resolution);
-        //     int my = static_cast<int>((pout.point.y - map_.info.origin.position.y) / map_.info.resolution);
+            try
+            {
+            pout = tf_buffer_->transform(pin, "map", tf2::durationFromSec(0.05));
+            }
+            catch (const tf2::TransformException &e)
+            {
+            continue; // Skip those you can’t transform
+            }
 
-        //     // Draw a square around the point
-        //     for (int dx = -inflation_radius_freespace_; dx <= inflation_radius_freespace_; ++dx)
-        //     {
-        //         for (int dy = -inflation_radius_freespace_; dy <= inflation_radius_freespace_; ++dy)
-        //         {
-        //             int nx = mx + dx;
-        //             int ny = my + dy;
+            int mx = static_cast<int>((pout.point.x - map_.info.origin.position.x) / map_.info.resolution);
+            int my = static_cast<int>((pout.point.y - map_.info.origin.position.y) / map_.info.resolution);
 
-        //             if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
-        //                 ny >= 0 && ny < static_cast<int>(map_.info.height))
-        //             {
-        //                 int index = ny * map_.info.width + nx;
-        //                 map_.data[index] = 0; // Free
-        //             }
-        //         }
-        //     }
-        // }
+            // Draw a square around the point
+            for (int dx = -inflation_radius_freespace_; dx <= inflation_radius_freespace_; ++dx)
+            {
+            for (int dy = -inflation_radius_freespace_; dy <= inflation_radius_freespace_; ++dy)
+            {
+                int nx = mx + dx;
+                int ny = my + dy;
+
+                if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
+                ny >= 0 && ny < static_cast<int>(map_.info.height))
+                {
+                int index = ny * map_.info.width + nx;
+                map_.data[index] = 0; // Free
+                }
+            }
+            }
+        }
+
+        // Reapply the saved black areas to the map
+        for (int index : black_indices)
+        {
+            map_.data[index] = 100; 
+        }
 
         // For each track, associate it with the closest cluster in last_clusters_ (if available)
         for (size_t track_idx = 0; track_idx < tracks_.size(); ++track_idx)
@@ -192,7 +208,6 @@ private:
                 transformed_cluster.push_back(pt);
             }
 
-
             // draw on map
             for (const auto &point : transformed_cluster)
             {
@@ -200,19 +215,22 @@ private:
                 int map_x = static_cast<int>((point.x - map_.info.origin.position.x) / map_.info.resolution);
                 int map_y = static_cast<int>((point.y - map_.info.origin.position.y) / map_.info.resolution);
 
-                // Draw a square around the point
+                // Draw a circle around the point
                 for (int dx = -inflation_radius_; dx <= inflation_radius_; ++dx)
                 {
                     for (int dy = -inflation_radius_; dy <= inflation_radius_; ++dy)
                     {
-                        int nx = map_x + dx;
-                        int ny = map_y + dy;
-
-                        if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
-                            ny >= 0 && ny < static_cast<int>(map_.info.height))
+                        if (dx * dx + dy * dy <= inflation_radius_ * inflation_radius_)
                         {
-                            int index = ny * map_.info.width + nx;
-                            map_.data[index] = 100; // Occupied
+                            int nx = map_x + dx;
+                            int ny = map_y + dy;
+
+                            if (nx >= 0 && nx < static_cast<int>(map_.info.width) &&
+                                ny >= 0 && ny < static_cast<int>(map_.info.height))
+                            {
+                                int index = ny * map_.info.width + nx;
+                                map_.data[index] = 100; // Occupied
+                            }
                         }
                     }
                 }

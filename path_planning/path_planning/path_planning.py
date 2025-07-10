@@ -51,9 +51,9 @@ class DubinsPathPublisher(Node):
     def adjust_path_for_obstacles(
         self,
         points,
-        shift_distance: float = 0.2, # distance to shift the points each iteration
+        shift_distance: float = 0.1, # distance to shift the points each iteration
         window_size_meters: float = 0.0, 
-        safety_distance: float = 2.2,
+        safety_distance: float = 0.8,
         shift_direction: int = 1
     ):
         """
@@ -82,7 +82,7 @@ class DubinsPathPublisher(Node):
 
         adjusted = []
         i = 0
-        max_attempts = 250
+        max_attempts = 500
 
         while i < len(points):
             x, y, yaw = points[i]
@@ -122,7 +122,7 @@ class DubinsPathPublisher(Node):
             # Determine shift direction based on occupancy
             if left_occupied > right_occupied:
                 shift_direction = 1  # Shift to the right
-                # break
+                
             else:
                 shift_direction = -1  # Shift to the left
 
@@ -186,7 +186,7 @@ class DubinsPathPublisher(Node):
         return adjusted
 
 
-    def smooth_path(self, points, kernel_size=78):
+    def smooth_path(self, points, kernel_size=50):
         import scipy.ndimage
 
         if len(points) < kernel_size:
