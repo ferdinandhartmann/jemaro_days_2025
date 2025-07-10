@@ -4,7 +4,7 @@ from nav_msgs.msg import Path, OccupancyGrid
 from geometry_msgs.msg import PoseStamped
 import math
 import numpy as np
-import transforms3d
+# import transforms3d
 from visualization_msgs.msg import Marker, MarkerArray
 
 from visualization_msgs.msg import Marker, MarkerArray
@@ -38,10 +38,12 @@ class DubinsPathPublisher(Node):
         self.start = (1097.2, 776.28, math.pi / 2)
         self.goal = (1012.74, 739.0, math.pi / 2)
 
+        self.get_logger().info("Started Path Planning Node")
+
 
     def map_callback(self, msg):
         self.map_data = msg
-        self.get_logger().info("Received new map. Computing path...")
+        self.get_logger().info("Received new map.")
 
         # self.compute_and_publish_path()
 
@@ -51,7 +53,7 @@ class DubinsPathPublisher(Node):
         points,
         shift_distance: float = 0.1, # distance to shift the points each iteration
         window_size_meters: float = 0.5, 
-        safety_distance: float = 0.35,
+        safety_distance: float = 0.4,
         shift_direction: int = 1
     ):
         """
@@ -204,6 +206,10 @@ class DubinsPathPublisher(Node):
         return filled
 
     def compute_and_publish_path(self):
+        if self.map_data is None:
+            self.get_logger().warn("Map data is not available yet. Skipping path computation.")
+            return
+
         num_points = 100
         x0, y0, yaw0 = self.start
         x1, y1, yaw1 = self.goal
@@ -243,12 +249,12 @@ class DubinsPathPublisher(Node):
             pose.pose.position.y = conf[1]
             pose.pose.position.z = 0.0
 
-            yaw = conf[2]
-            quat = transforms3d.quaternions.axangle2quat([0, 0, 1], yaw)
-            pose.pose.orientation.x = quat[1]
-            pose.pose.orientation.y = quat[2]
-            pose.pose.orientation.z = quat[3]
-            pose.pose.orientation.w = quat[0]
+            # yaw = conf[2]
+            # quat = self.yaw_to_quaternion(yaw)
+            pose.pose.orientation.x = 0.0
+            pose.pose.orientation.y = 0.0
+            pose.pose.orientation.z = 0.0
+            pose.pose.orientation.w = 1.0
 
             path_msg.poses.append(pose)
 

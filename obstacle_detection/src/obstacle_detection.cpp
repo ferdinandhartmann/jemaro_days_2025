@@ -48,11 +48,10 @@ public:
         road_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("road_points", 10);
 
         map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/jemaro_map", rclcpp::QoS(10).reliable());
-        // publish_timer = create_wall_timer(100ms,    // rate
-        //   [&](){callback_time();});
-        publish_timer = create_wall_timer(
-            std::chrono::milliseconds(100), // Publish every 100ms
-            std::bind(&ObstacleDetector::add_obstacles_and_publish_map, this));
+
+        // publish_timer = create_wall_timer(
+        //     std::chrono::milliseconds(100), // Publish every 100ms
+        //     std::bind(&ObstacleDetector::add_obstacles_and_publish_map, this));
 
         hull_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("road_hull", 10);
 
@@ -245,7 +244,7 @@ private:
         road_pub_->publish(road_msg);
 
         auto high_intensity_obstacles = filterHighIntensityObstacles(obstacles);
-        RCLCPP_INFO(this->get_logger(), "Filtered high-intensity obstacles: %zu points", high_intensity_obstacles->size());
+        RCLCPP_INFO(this->get_logger(), "Filtered high-intensity: %zu points", high_intensity_obstacles->size());
 
         publishHighIntensityObstacles(high_intensity_obstacles, msg->header);
 
@@ -584,7 +583,7 @@ private:
             }
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f");
+        // RCLCPP_INFO(rclcpp::get_logger("obstacle_detector"), "Clusters min z: %f, max z: %f");
 
         return cluster_indices;
     }

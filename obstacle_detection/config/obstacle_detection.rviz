@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Marker1
       Splitter Ratio: 0.5706806182861328
     Tree Height: 1087
   - Class: rviz_common/Selection
@@ -459,7 +458,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        road_hull: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -467,6 +466,46 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /road_hull
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /ZOE3/path_follower/setPath
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Start and Goal
+      Namespaces:
+        start_goal: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /start_goal_markers
       Value: true
   Enabled: true
   Global Options:
@@ -514,25 +553,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 25.181581497192383
+      Distance: 153.35745239257812
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -8.507152557373047
-        Y: -10.228739738464355
-        Z: 11.678359031677246
+        X: -0.0566517636179924
+        Y: 6.226633071899414
+        Z: -7.383690357208252
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6147963404655457
+      Pitch: 1.1697962284088135
       Target Frame: ZOE3/os_sensor
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.340391606092453
+      Yaw: 0.49039149284362793
     Saved: ~
 Window Geometry:
   Displays:
@@ -550,5 +589,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1487
-  X: -8
-  Y: 26
+  X: -28
+  Y: 191

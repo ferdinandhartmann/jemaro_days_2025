@@ -23,8 +23,8 @@ obstacle_detector:
     max_missed_frames: 100
     min_age_frames: 4
 
-    width: 2000        # 150 cells in width
-    height: 2000       # 150 cells in height
-    resolution: 0.25   # 0.5 m per cell
-    offset_x: 700.0
-    offset_y: 400.0
+    width: 3000        # 150 cells in width
+    height: 3000       # 150 cells in height
+    resolution: 0.11   # 0.5 m per cell
+    offset_x: 800.0
+    offset_y: 550.0
