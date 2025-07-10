@@ -653,7 +653,7 @@ private:
 
             // Publish marker for the cluster
             visualization_msgs::msg::Marker m;
-            m.header.frame_id = frame_id_;
+            m.header.frame_id = "map";
             m.header.stamp = this->get_clock()->now();
             m.ns = "obstacle_boxes";
             m.id = id++;

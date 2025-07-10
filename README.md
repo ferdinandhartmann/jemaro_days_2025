@@ -66,16 +66,57 @@ Launch the pointcloud downsampling node (based on https://github.com/LihanChen20
 ros2 launch pointcloud_downsampling pointcloud_downsampling.launch.py
 ```
 
-# Obstacle Detection
+---
 
-Run the full obstacle detection pipeline with RViz:
+### JEAMRO TEAM 1 Implementation
+
+## Run the Code
+
+### Replay Recorded Data
+Replay the recorded LiDAR dataset with specific options:
+```bash
+ros2 bag play -l --start-offset 8 --rate 0.6 src/data/rosbag2_2025_06_26-10_27_18/
 ```
-ros2 launch obstacle_detection launch_real.launch.py
+
+### Full Obstacle Detection and Path Planning Pipeline
+Run the complete pipeline with RViz visualization:
+```bash
+ros2 launch obstacle_detection launch_obstacle_detection_real.launch.launch.py
 ```
-This node limits the LiDAR field of view to the front 60 degrees, segments the
-ground plane using RANSAC, clusters the remaining points and publishes bounding
-boxes for up to five obstacles.
+
+### Path Planning Only
+Run only the path planning module:
+```bash
+ros2 launch path_planning path_planning.launch.py
+```
+
+## Visualization
+
+### Obstacle Detection Visualization
+Launch RViz with the obstacle detection configuration:
+```bash
+rviz2 -d src/jemaro_days_2025/obstacle_detection/config/obstacle_detection.rviz
+```
+
+### Real Car Visualization
+Launch RViz with the real car configuration:
+```bash
+rviz2 -d src/jemaro_days_2025/obstacle_detection/config/realcar.rviz
+```
 
 
+## Obstacle Detection
 
+1. Cut off the point cloud.
+2. Remove points in the road plane using RANSAC and retain them as road detection.
+3. Remove low-intensity points.
+4. Euclidean clustering to create clusters.
+5. Remove clusters that are larger than a specified threshold in the x and y or smaller than a threshold in the z.
+6. Remove clusters that contain more points than a threshold.
+7. Remove clusters that are outside the road area in the x and y dimensions.
 
+## Map Creation
+
+1. Mlti-frame tracking: Track clusters based on their centroids. Clusters must be at least 4 frames old and are removed 120 frames after disappearing.
+2. Draw the inflated area of tracked clusters on the map as black.
+3. Draw road points on the map as white.

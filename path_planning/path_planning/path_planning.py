@@ -29,7 +29,7 @@ class DubinsPathPublisher(Node):
         self.point_marker_pub = self.create_publisher(MarkerArray, '/path_points', 10)
 
         self.marker_timer = self.create_timer(1.0, self.publish_markers)
-        self.path_timer = self.create_timer(1.0, self.compute_and_publish_path)
+        self.path_timer = self.create_timer(4.5, self.compute_and_publish_path)
 
         self.map_data = None
         self.turning_radius = 2.0
@@ -51,9 +51,9 @@ class DubinsPathPublisher(Node):
     def adjust_path_for_obstacles(
         self,
         points,
-        shift_distance: float = 0.1, # distance to shift the points each iteration
+        shift_distance: float = 0.2, # distance to shift the points each iteration
         window_size_meters: float = 0.5, 
-        safety_distance: float = 0.4,
+        safety_distance: float = 1.5,
         shift_direction: int = 1
     ):
         """
@@ -82,7 +82,7 @@ class DubinsPathPublisher(Node):
 
         adjusted = []
         i = 0
-        max_attempts = 1000
+        max_attempts = 250
 
         while i < len(points):
             x, y, yaw = points[i]
@@ -97,18 +97,37 @@ class DubinsPathPublisher(Node):
 
             # Check collision + safety buffer
             is_obstacle = False
+            left_occupied = 0
+            right_occupied = 0
+            total_cells = 0
+
             for ox in range(-safety_cells, safety_cells + 1):
                 for oy in range(-safety_cells, safety_cells + 1):
                     cx = mx + ox
                     cy = my + oy
-                    if 0 <= cx < width and 0 <= cy < height and grid[cy, cx] > 80:
-                        is_obstacle = True
-                        break
-                if is_obstacle:
-                    break
+                    if 0 <= cx < width and 0 <= cy < height:
+                        if grid[cy, cx] > 80:
+                            # Determine if the cell is on the left or right of the path
+                            relative_x = (cx * resolution + origin.x) - x
+                            relative_y = (cy * resolution + origin.y) - y
+                            cross_product = relative_x * math.sin(path_angle) - relative_y * math.cos(path_angle)
+                            if cross_product > 0:
+                                left_occupied += 1
+                            else:
+                                right_occupied += 1
+                        total_cells += 1
+
+            is_obstacle = left_occupied + right_occupied > 0
+
+            # Determine shift direction based on occupancy
+            if left_occupied > right_occupied:
+                shift_direction = 1  # Shift to the right
+                # break
+            else:
+                shift_direction = -1  # Shift to the left
 
             if is_obstacle:
-                self.get_logger().warn(f"Obstacle at point {i}, shifting window ±{window_size} cells")
+                self.get_logger().info(f"Obstacle at point {i}, shifting window ±{window_size} cells")
 
                 # Define the block of points to shift
                 start_idx = max(0, i - window_size)
@@ -167,7 +186,7 @@ class DubinsPathPublisher(Node):
         return adjusted
 
 
-    def smooth_path(self, points, kernel_size=50):
+    def smooth_path(self, points, kernel_size=120):
         import scipy.ndimage
 
         if len(points) < kernel_size:

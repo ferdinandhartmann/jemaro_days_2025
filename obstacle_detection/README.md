@@ -16,7 +16,7 @@ rviz2 -d src/jemaro_days_2025/obstacle_detection/config/realcar.rviz
 ### Launch Real-Time Detection
 To start the obstacle detection pipeline:
 ```bash
-ros2 launch obstacle_detection launch_obstacle_detection_real.launch.py
+ros2 launch obstacle_detection launch_obstacle_detection_real.launch.launch.py
 ```
 
 ### Replay Recorded Data
