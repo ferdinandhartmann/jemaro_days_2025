@@ -19,7 +19,7 @@ class DubinsPathPublisher(Node):
         self.marker_publisher_ = self.create_publisher(MarkerArray, '/start_goal_markers', 10)
         self.map_sub = self.create_subscription(
             OccupancyGrid,
-            '/jemaro_map2',
+            '/jemaro_map',
             self.map_callback,
             qos_profile=rclpy.qos.QoSProfile(
                 depth=10,

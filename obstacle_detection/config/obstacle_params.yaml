@@ -2,7 +2,7 @@ obstacle_detector:
   ros__parameters:
     input_topic: "/ZOE3/os_node/points_downsampled_cutoff"
     obstacles_topic: "/obstacles"
-    clusters_topic: "/obstacle_clusters_test"
+    clusters_topic: "/obstacle_clusters"
     frame_id: "ZOE3/os_sensor"
     ransac_distance_threshold: 0.1 # how far a point can be from the plane to be cosidered part of the plane
     cluster_tolerance: 0.32 # Cluster tolerance in meters (maximum distance between points in a cluster)

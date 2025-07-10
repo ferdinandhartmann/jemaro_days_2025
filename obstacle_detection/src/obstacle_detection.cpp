@@ -47,7 +47,7 @@ public:
         marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("obstacle_boxes", 10);
         road_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("road_points", 10);
 
-        map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/jemaro_map2", rclcpp::QoS(10).reliable());
+        map_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/jemaro_map", rclcpp::QoS(10).reliable());
 
         // publish_timer = create_wall_timer(
         //     std::chrono::milliseconds(100), // Publish every 100ms
