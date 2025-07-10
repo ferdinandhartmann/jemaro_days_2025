@@ -2,26 +2,26 @@ obstacle_detector:
   ros__parameters:
     input_topic: "/ZOE3/os_node/points_downsampled_cutoff"
     obstacles_topic: "/obstacles"
-    clusters_topic: "/obstacle_clusters"
+    clusters_topic: "/obstacle_clusters_test"
     frame_id: "ZOE3/os_sensor"
     ransac_distance_threshold: 0.1 # how far a point can be from the plane to be cosidered part of the plane
     cluster_tolerance: 0.32 # Cluster tolerance in meters (maximum distance between points in a cluster)
     min_cluster_size: 3
     max_cluster_size: 100000 # Maximum size of point group to consider as a cluster
-    max_selected_cluster_points: 70 # Maximum size of cluster to select after intensty ranking 
+    max_selected_cluster_points: 130 # Maximum size of cluster to select after intensty ranking 
     # max_cluster_publish: 100000
-    intensity_threshold: 220.0 # Intensity threshold for filtering points
-    max_cluster_size_x: 2.5
-    max_cluster_size_y: 2.5
-    min_cluster_size_z: 0.18
-    max_cluster_z_height: -0.5 # Maximum z coordinate height of the cluster in meters
+    intensity_threshold: 850.0 # Intensity threshold for filtering points
+    max_cluster_size_x: 2.0
+    max_cluster_size_y: 2.0
+    min_cluster_size_z: 0.14
+    max_cluster_z_height: 2.5 # Maximum z coordinate height of the cluster in meters
     inflation_radius: 3.0 # How much to "inflate" each point in map cells (e.g. 1 = 3x3 square, 2 = 5x5 square)
     inflation_radius_freespace: 2.5 
     clear_map_interval: 1000000 # How often to clear the map (after how many calls to the callback)
 
     max_match_dist: 2.0
     max_missed_frames: 100
-    min_age_frames: 4
+    min_age_frames: 3
 
     width: 3000        # 150 cells in width
     height: 3000       # 150 cells in height

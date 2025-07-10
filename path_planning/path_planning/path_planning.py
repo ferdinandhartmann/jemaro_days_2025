@@ -19,7 +19,7 @@ class DubinsPathPublisher(Node):
         self.marker_publisher_ = self.create_publisher(MarkerArray, '/start_goal_markers', 10)
         self.map_sub = self.create_subscription(
             OccupancyGrid,
-            '/jemaro_map',
+            '/jemaro_map2',
             self.map_callback,
             qos_profile=rclpy.qos.QoSProfile(
                 depth=10,
@@ -52,8 +52,8 @@ class DubinsPathPublisher(Node):
         self,
         points,
         shift_distance: float = 0.2, # distance to shift the points each iteration
-        window_size_meters: float = 0.5, 
-        safety_distance: float = 1.5,
+        window_size_meters: float = 0.0, 
+        safety_distance: float = 2.2,
         shift_direction: int = 1
     ):
         """
@@ -186,7 +186,7 @@ class DubinsPathPublisher(Node):
         return adjusted
 
 
-    def smooth_path(self, points, kernel_size=120):
+    def smooth_path(self, points, kernel_size=78):
         import scipy.ndimage
 
         if len(points) < kernel_size:
@@ -250,7 +250,6 @@ class DubinsPathPublisher(Node):
         bridged = self.fill_gaps(adjusted, max_dist=step)
 
         # now publish `bridged` instead of `adjusted`
-
         smoothed = self.smooth_path(bridged)
 
         self.publish_path(smoothed)
@@ -301,9 +300,9 @@ class DubinsPathPublisher(Node):
             m.pose.position.x = x
             m.pose.position.y = y
             m.pose.position.z = 0.1
-            m.scale.x = 0.2
-            m.scale.y = 0.2
-            m.scale.z = 0.2
+            m.scale.x = 0.5
+            m.scale.y = 0.5
+            m.scale.z = 0.5
             m.color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.8)
             ma.markers.append(m)
 
