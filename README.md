@@ -120,3 +120,26 @@ rviz2 -d src/jemaro_days_2025/obstacle_detection/config/realcar.rviz
 1. Mlti-frame tracking: Track clusters based on their centroids. Clusters must be at least 4 frames old and are removed 120 frames after disappearing.
 2. Draw the inflated area of tracked clusters on the map as black.
 3. Draw road points on the map as white.
+This node limits the LiDAR field of view to the front 60 degrees, segments the
+ground plane using RANSAC, clusters the remaining points and publishes bounding
+boxes for up to five obstacles.
+
+## Path Planning
+1. Subscribe the map data (`OccupancyGrid`) from the `/jemaro_map` topic, which is published by the obstacle detection node.
+
+2. Each time new data is received, an optimal path is generated:
+
+    2.1. Generate a straight path from the start point to the goal point.
+    
+    2.2. For each point on the path, check whether there is an obstalce within the specifued `safety_distance` distance.
+
+    2.3. If an obstacle is detected, shifft the affected point to the left by `shift_distance`, then continue checking the following points.
+
+    2.4. Once the rough path is generated,fill the gaps between points and apply smoothing to make the path coutinuous and navigable.
+
+3. Publish the final path to the `/ZOE3/path_follower/setPath` topic every 4.5 seconds.
+
+
+
+
+
