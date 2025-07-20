@@ -2,73 +2,19 @@
 
 The rosbag LiDAR dataset and the lane paths are available here: https://uncloud.univ-nantes.fr/index.php/s/tkEwQcM7qGMj9wp 
 
-# In the Workspace folder
+### Real Car Evaluation Video
 
-```
-colcon build --symlink-install
-```
+Watch the real car evaluation video for the Jemaro Days 2025 competition:
 
-# Gazebo
-The Gazebo prius environment is based on https://github.com/mattborghi/osrf_car_demo
+![Real Car Evaluation Video](info_material/jemar_competition_realcar_evaluation.mov)
 
+![Detection](info_material/detection.jpg)
 
-Launch the Gazebo simulator with the straight road world and the prius:
-```
-ros2 launch car_demo straight_road.launch.py
-```
+![real_test_rviz](info_material/real_test_rviz.jpg)
 
-Convert twist messages to the prius control messages:
-```
-ros2 launch twist_to_prius_cmd twist_to_prius_cmd.launch.py
-```
+![Group Photo](info_material/group_photo.jpg)
 
-Launch a basic pure pursuit path following algorithm:
-```
-ros2 launch car_control car_control.launch.py
-```
-
-Publish the path of the center of the lane and of the right and left sides of the road (only one time, use -l for multiple messages):
-```
-ros2 bag play path_prius
-```
-```
-ros2 bag play path_right_prius --remap /path:=path_right
-```
-```
-ros2 bag play path_left_prius --remap /path:=path_left
-```
-
-# LiDAR dataset
-
-Launch rviz interface:
-```
-rviz2 -d jemaro.rviz
-```
-
-Publish the path of the center of the lane and of the right and left sides of the road (only one time, use -l for multiple messages):
-```
-ros2 bag play path_zoe --remap /ZOE3/path_follower/setPath:=path
-```
-```
-ros2 bag play path_left_zoe --remap /ZOE3/path_follower/setPath:=path_left
-```
-```
-ros2 bag play path_right_zoe --remap /ZOE3/path_follower/setPath:=path_right
-```
-
-Read the LiDAR dataset:
-```
-ros2 bag play rosbag2_2025_06_26-10_27_18
-```
-
-Launch the pointcloud downsampling node (based on https://github.com/LihanChen2004/pointcloud_downsampling):
-```
-ros2 launch pointcloud_downsampling pointcloud_downsampling.launch.py
-```
-
----
-
-### JEAMRO TEAM 1 Implementation
+## JEAMRO TEAM 1 Implementation
 
 ## Run the Code
 
@@ -139,6 +85,66 @@ boxes for up to five obstacles.
 
 3. Publish the final path to the `/ZOE3/path_follower/setPath` topic every 4.5 seconds.
 
+----
+----
+
+# Gazebo
+The Gazebo prius environment is based on https://github.com/mattborghi/osrf_car_demo
+
+
+Launch the Gazebo simulator with the straight road world and the prius:
+```
+ros2 launch car_demo straight_road.launch.py
+```
+
+Convert twist messages to the prius control messages:
+```
+ros2 launch twist_to_prius_cmd twist_to_prius_cmd.launch.py
+```
+
+Launch a basic pure pursuit path following algorithm:
+```
+ros2 launch car_control car_control.launch.py
+```
+
+Publish the path of the center of the lane and of the right and left sides of the road (only one time, use -l for multiple messages):
+```
+ros2 bag play path_prius
+```
+```
+ros2 bag play path_right_prius --remap /path:=path_right
+```
+```
+ros2 bag play path_left_prius --remap /path:=path_left
+```
+
+# LiDAR dataset
+
+Launch rviz interface:
+```
+rviz2 -d jemaro.rviz
+```
+
+Publish the path of the center of the lane and of the right and left sides of the road (only one time, use -l for multiple messages):
+```
+ros2 bag play path_zoe --remap /ZOE3/path_follower/setPath:=path
+```
+```
+ros2 bag play path_left_zoe --remap /ZOE3/path_follower/setPath:=path_left
+```
+```
+ros2 bag play path_right_zoe --remap /ZOE3/path_follower/setPath:=path_right
+```
+
+Read the LiDAR dataset:
+```
+ros2 bag play rosbag2_2025_06_26-10_27_18
+```
+
+Launch the pointcloud downsampling node (based on https://github.com/LihanChen2004/pointcloud_downsampling):
+```
+ros2 launch pointcloud_downsampling pointcloud_downsampling.launch.py
+```
 
 
 
