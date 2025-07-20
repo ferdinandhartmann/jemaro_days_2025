@@ -1,18 +1,22 @@
 # jemaro_days_2025
 
-The rosbag LiDAR dataset and the lane paths are available here: https://uncloud.univ-nantes.fr/index.php/s/tkEwQcM7qGMj9wp 
-
 ### Real Car Evaluation Video
 
-Watch the real car evaluation video for the Jemaro Days 2025 competition:
+<div align="center">
+  <img src="info_material/group_photo.jpg" alt="Group Photo" width="600"/>
+  <img src="info_material/detection.jpg" alt="Detection" width="400"/>
+  <img src="info_material/real_test_rviz.jpg" alt="RViz" width="1000"/>
+</div>
 
-![Real Car Evaluation Video](info_material/jemar_competition_realcar_evaluation.mov)
 
-![Detection](info_material/detection.jpg)
+https://github.com/user-attachments/assets/38878e39-80ae-408c-b41b-5d2c9e1ff69a
 
-![real_test_rviz](info_material/real_test_rviz.jpg)
+https://github.com/user-attachments/assets/f6f2c50b-c160-4bc2-b46a-69f7eec38f2b
 
-![Group Photo](info_material/group_photo.jpg)
+https://github.com/user-attachments/assets/6c50105a-4aca-418c-9db0-fb0639897c73
+
+
+The rosbag LiDAR dataset and the lane paths are available here: https://uncloud.univ-nantes.fr/index.php/s/tkEwQcM7qGMj9wp 
 
 ## JEAMRO TEAM 1 Implementation
 
